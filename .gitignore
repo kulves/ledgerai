@@ -1,0 +1,34 @@
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables and secrets
+.env
+*.key
+*.pem
+*.secret
+
+# Database files (encrypted user data)
+*.db
+*.sqlite
+*.sqlite3
+database/ledgerai.db
+
+# Node.js
+node_modules/
+dist/
+build/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local uploads
+uploads/
