@@ -1,41 +1,57 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+from backend.app.config import get_settings
+from backend.app.logger import get_logger
+from backend.app.errors import custom_http_exception_handler, HTTPException
+
+settings = get_settings()
+logger = get_logger()
 
 app = FastAPI(
-    title="Ledger AI - Luca",
+    title=settings.app_name,
     description="Local-first AI bookkeeping and tax assistant",
-    version="0.1.0"
+    version=settings.version,
+    debug=settings.debug
 )
 
-# Configure CORS for the frontend connection
+# Error handler
+app.add_exception_handler(HTTPException, custom_http_exception_handler)
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows local Electron/React dev server
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.get("/")
-def read_root():
+async def root():
+    logger.info("Root endpoint accessed")
     return {
         "success": True,
-        "message": "Luca Backend API running smoothly",
-        "version": "0.1.0"
+        "message": f"{settings.app_name} Backend is running!",
+        "version": settings.version
     }
 
-@app.get("/api/health")
-def health_check():
+@app.get("/health")
+async def health():
+    logger.info("Health check performed")
     return {
-        "status": "healthy",
-        "database": "connected (sqlite3/cryptography secure layer ready)"
+        "status": "ok",
+        "app": settings.app_name,
+        "version": settings.version,
+        "model": settings.ollama_model
     }
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    logger.info(f"Starting {settings.app_name} v{settings.version}...")
+    uvicorn.run(
+        "backend.app.main:app",
+        host=settings.host,
+        port=settings.port,
+        reload=True
+    )
