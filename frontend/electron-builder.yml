@@ -1,0 +1,21 @@
+appId: com.ledgerai.luca
+productName: Luca
+
+directories:
+  output: ../../dist
+
+win:
+  target: nsis
+  artifactName: Luca-Setup-${version}.exe
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Luca
+
+files:
+  - "dist/**/*"
+  - "electron/**/*"
+  - "!node_modules"
