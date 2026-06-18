@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-navy-900: #0C2340;
+  --color-gold-500: #C9962C;
+}
 
 body {
   margin: 0;

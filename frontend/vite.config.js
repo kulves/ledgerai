@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss() // 🚀 Direct injection pipeline handles compilation passes before minification
+    tailwindcss() // 🚀 Processes your utility classes directly during compilation passes
   ],
-  base: './', // Crucial relative routing parameter for Electron window frames
+  base: './', // Crucial relative routing parameter for Electron asset tracking
 })
