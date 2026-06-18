@@ -1,0 +1,10 @@
+{
+  "id": "above_below_line_deductions",
+  "topic": "Deduction types",
+  "title": "Above-the-line vs. below-the-line deductions",
+  "source": "IRS Publication 505, IRS Publication 535",
+  "last_verified": "2026-01",
+  "content": "Above-the-line deductions reduce your Adjusted Gross Income (AGI) directly. They are subtracted before your tax rate is applied, which makes them more powerful. Examples for self-employed business owners include business expenses on Schedule C, self-employed health insurance premiums, retirement contributions (SEP-IRA, Solo 401k), and the self-employment tax deduction. These apply whether you itemize or take the standard deduction. Below-the-line deductions are itemized deductions on Schedule A. They only help you if your total itemized deductions exceed the standard deduction for your filing status. Examples include medical expenses over 7.5% of AGI, state and local taxes (SALT, capped at $10,000), mortgage interest, and charitable contributions.",
+  "applies_to": ["sole_prop", "llc", "s_corp", "partnership"],
+  "related_entries": ["qbi_deduction", "schedule_c_expenses", "standard_deduction"]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "qbi_deduction",
+  "topic": "Business deductions",
+  "title": "QBI Deduction (Section 199A)",
+  "source": "IRS Publication 535, Section 199A",
+  "last_verified": "2026-01",
+  "content": "The Qualified Business Income (QBI) deduction allows eligible self-employed individuals and small business owners to deduct up to 20% of their qualified business income on their personal tax return. This applies to pass-through entities including sole proprietorships, partnerships, S-corporations, and most LLCs. C-corporations do not qualify. The deduction has income thresholds that limit eligibility for certain service businesses (like consulting, law, or healthcare) at higher income levels. QBI is calculated based on net business income, not gross revenue, and does not include capital gains, dividends, or reasonable compensation paid to S-corp owners.",
+  "applies_to": ["sole_prop", "llc", "s_corp", "partnership"],
+  "related_entries": ["above_below_line_deductions", "s_corp_vs_sole_prop"]
+}
