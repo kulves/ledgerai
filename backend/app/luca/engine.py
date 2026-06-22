@@ -114,7 +114,8 @@ class LucaEngine:
                     json={
                         "model": self.model,
                         "prompt": full_prompt,
-                        "stream": False           # Get complete response at once
+                        "stream": False,           # Get complete response at once
+                        "num_ctx": 512
                     }
                 )
 
@@ -212,7 +213,8 @@ class LucaEngine:
                         "model": self.model,
                         "prompt": vision_prompt,
                         "images": [image_data],   # List of base64-encoded images
-                        "stream": False
+                        "stream": False,
+                        "num_ctx": 512
                     }
                 )
 

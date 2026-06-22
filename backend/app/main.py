@@ -5,6 +5,7 @@ import uvicorn
 from backend.app.config import get_settings
 from backend.app.logger import get_logger
 from backend.app.errors import custom_http_exception_handler, HTTPException
+from backend.app.routes.luca import router as luca_router
 
 settings = get_settings()
 logger = get_logger()
@@ -28,6 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(luca_router)
+# 
 @app.get("/")
 async def root():
     logger.info("Root endpoint accessed")
