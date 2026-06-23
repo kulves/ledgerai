@@ -6,6 +6,9 @@ from backend.app.config import get_settings
 from backend.app.logger import get_logger
 from backend.app.errors import custom_http_exception_handler, HTTPException
 from backend.app.routes.luca import router as luca_router
+from backend.app.database import init_db
+from backend.app.routes.expenses import router as expenses_router
+from backend.app.routes.businesses import router as businesses_router
 
 settings = get_settings()
 logger = get_logger()
@@ -30,7 +33,14 @@ app.add_middleware(
 )
 
 app.include_router(luca_router)
+app.include_router(expenses_router)
+app.include_router(businesses_router)
 # 
+@app.on_event("startup")
+async def startup():
+    """Initialize database tables on server start."""
+    init_db()
+    
 @app.get("/")
 async def root():
     logger.info("Root endpoint accessed")
