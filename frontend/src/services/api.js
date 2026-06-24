@@ -1,25 +1,15 @@
 /**
  * api.js — Ledger AI Frontend API Service
  * =========================================
- * Purpose:
- *   Central place for all HTTP calls to the FastAPI backend.
- *   Every backend endpoint the frontend uses is defined here.
- *   No fetch() calls anywhere else in the frontend — always go
- *   through this file so URLs and error handling stay consistent.
- *
- * Connections:
- *   - Called by: App.jsx, and future route/component files
- *   - Talks to:  FastAPI backend at 127.0.0.1:8000
+ * Central place for all HTTP calls to the FastAPI backend.
+ * No fetch() calls anywhere else in the frontend.
  */
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export const api = {
 
-  /**
-   * Check if the backend is running and healthy.
-   * Called on app load and every 8 seconds to keep status fresh.
-   */
+  // ── Health ──────────────────────────────────────────────────────────────
   async getHealth() {
     try {
       const response = await fetch(`${API_BASE_URL}/health`);
@@ -27,21 +17,11 @@ export const api = {
       return await response.json();
     } catch (error) {
       console.error('Health check failed:', error);
-      return {
-        status: 'offline',
-        error: error.message,
-        version: 'Unknown'
-      };
+      return { status: 'offline', error: error.message, version: 'Unknown' };
     }
   },
 
-  /**
-   * Ask Luca an educational tax question.
-   * Uses the RAG knowledge base — only answers from verified content.
-   *
-   * @param {string} question - The user's question in natural language
-   * @returns {Object} { answered, answer, source, topic, confidence_note }
-   */
+  // ── Luca chat ────────────────────────────────────────────────────────────
   async askLuca(question) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/luca/ask`, {
@@ -56,10 +36,98 @@ export const api = {
       return {
         answered: false,
         answer: 'I had trouble connecting to the backend. Please make sure the server is running.',
-        source: null,
-        topic: null,
-        confidence_note: error.message
+        source: null, topic: null, confidence_note: error.message
       };
+    }
+  },
+
+  // ── Luca categorization ──────────────────────────────────────────────────
+  async categorizeExpense(vendor, amount, description = '') {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/luca/categorize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendor, amount, description })
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('categorizeExpense failed:', error);
+      return {
+        category: 'Uncategorized', confidence: 'low',
+        deductible: false, notes: error.message,
+        needs_review: true, success: false
+      };
+    }
+  },
+
+  // ── Businesses ───────────────────────────────────────────────────────────
+  async getBusinesses() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/businesses/`);
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('getBusinesses failed:', error);
+      return [];
+    }
+  },
+
+  async createBusiness(name, entityType = 'sole_prop', state = 'CA') {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/businesses/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, entity_type: entityType, state })
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('createBusiness failed:', error);
+      return null;
+    }
+  },
+
+  // ── Expenses ─────────────────────────────────────────────────────────────
+  async getExpenses(businessId = null) {
+    try {
+      const url = businessId
+        ? `${API_BASE_URL}/api/expenses/?business_id=${businessId}`
+        : `${API_BASE_URL}/api/expenses/`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('getExpenses failed:', error);
+      return [];
+    }
+  },
+
+  async createExpense(expenseData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(expenseData)
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('createExpense failed:', error);
+      return null;
+    }
+  },
+
+  async deleteExpense(expenseId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('deleteExpense failed:', error);
+      return null;
     }
   }
 

@@ -136,3 +136,83 @@ async def ask_luca(request: AskRequest) -> AskResponse:
         source=match["source"],
         topic=match["topic"]
     )
+
+class CategorizeRequest(BaseModel):
+    """What the frontend sends when asking Luca to categorize an expense."""
+    vendor: str
+    amount: float
+    description: str = ""
+
+
+class CategorizeResponse(BaseModel):
+    """Luca's suggested categorization for an expense."""
+    category: str
+    confidence: str
+    deductible: bool
+    notes: str
+    needs_review: bool
+    success: bool
+
+
+@router.post("/categorize", response_model=CategorizeResponse)
+async def categorize_expense(request: CategorizeRequest) -> CategorizeResponse:
+    """
+    Ask Luca to suggest an IRS category for an expense.
+    Uses the categorize.txt prompt — returns structured JSON.
+    Called when the user hits "Categorize" in the expense form.
+    """
+    logger.info(f"Categorize request: {request.vendor} ${request.amount}")
+
+    # Build the prompt using the categorize.txt template
+    categorize_prompt = load_prompt("categorize.txt")
+
+    user_message = (
+        f"Vendor: {request.vendor}\n"
+        f"Amount: ${request.amount:.2f}\n"
+        f"Description: {request.description or 'Not provided'}"
+    )
+
+    result = await luca.chat(
+        user_message=user_message,
+        system_prompt=categorize_prompt
+    )
+
+    if not result["success"]:
+        logger.error(f"Categorization failed: {result['error']}")
+        return CategorizeResponse(
+            category="Uncategorized",
+            confidence="low",
+            deductible=False,
+            notes="Luca could not categorize this expense. Please categorize manually.",
+            needs_review=True,
+            success=False
+        )
+
+    # Parse the JSON response from Luca
+    import json
+    import re
+    try:
+        # Extract JSON from the response (model sometimes adds extra text)
+        raw = result["response"]
+        json_match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if json_match:
+            parsed = json.loads(json_match.group())
+            return CategorizeResponse(
+                category=parsed.get("category", "Uncategorized"),
+                confidence=parsed.get("confidence", "low"),
+                deductible=bool(parsed.get("deductible", False)),
+                notes=parsed.get("notes", ""),
+                needs_review=bool(parsed.get("needs_review", True)),
+                success=True
+            )
+    except Exception as e:
+        logger.error(f"Failed to parse categorization JSON: {e} | raw: {raw}")
+
+    return CategorizeResponse(
+        category="Uncategorized",
+        confidence="low",
+        deductible=False,
+        notes="Could not parse Luca's response. Please categorize manually.",
+        needs_review=True,
+        success=False
+    )
