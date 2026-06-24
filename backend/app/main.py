@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
+from backend.app.routes.mileage import router as mileage_router
 from backend.app.config import get_settings
 from backend.app.logger import get_logger
 from backend.app.errors import custom_http_exception_handler, HTTPException
@@ -35,6 +36,7 @@ app.add_middleware(
 app.include_router(luca_router)
 app.include_router(expenses_router)
 app.include_router(businesses_router)
+app.include_router(mileage_router)
 # 
 @app.on_event("startup")
 async def startup():

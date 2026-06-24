@@ -9,10 +9,12 @@ import { useState, useEffect } from 'react'
 import { api } from './services/api'
 import ChatPage from './pages/ChatPage'
 import ExpensesPage from './pages/ExpensesPage'
+import MileagePage from './pages/MileagePage'
 
 const TABS = [
   { id: 'chat',     label: 'Ask Luca' },
   { id: 'expenses', label: 'Expenses' },
+  { id: 'mileage',  label: 'Mileage'  },
 ]
 
 export default function App() {
@@ -71,6 +73,7 @@ export default function App() {
       <main className="flex-1 overflow-hidden flex flex-col">
         {activeTab === 'chat'     && <ChatPage     backendStatus={backendStatus} />}
         {activeTab === 'expenses' && <ExpensesPage backendStatus={backendStatus} />}
+        {activeTab === 'mileage'   && <MileagePage   backendStatus={backendStatus} />}
       </main>
 
     </div>

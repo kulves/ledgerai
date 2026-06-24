@@ -129,6 +129,62 @@ export const api = {
       console.error('deleteExpense failed:', error);
       return null;
     }
+  },
+
+  // ── Mileage ──────────────────────────────────────────────────────────────
+  async getMileageTrips(businessId = null) {
+    try {
+      const url = businessId
+        ? `${API_BASE_URL}/api/mileage/?business_id=${businessId}`
+        : `${API_BASE_URL}/api/mileage/`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('getMileageTrips failed:', error);
+      return [];
+    }
+  },
+
+  async getMileageSummary(businessId) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/mileage/summary?business_id=${businessId}`
+      );
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('getMileageSummary failed:', error);
+      return {};
+    }
+  },
+
+  async createMileageTrip(tripData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/mileage/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tripData)
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('createMileageTrip failed:', error);
+      return null;
+    }
+  },
+
+  async deleteMileageTrip(tripId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/mileage/${tripId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('deleteMileageTrip failed:', error);
+      return null;
+    }
   }
 
 };
