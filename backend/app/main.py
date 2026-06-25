@@ -10,6 +10,7 @@ from backend.app.routes.luca import router as luca_router
 from backend.app.database import init_db
 from backend.app.routes.expenses import router as expenses_router
 from backend.app.routes.businesses import router as businesses_router
+from backend.app.routes.documents import router as documents_router
 
 settings = get_settings()
 logger = get_logger()
@@ -37,6 +38,7 @@ app.include_router(luca_router)
 app.include_router(expenses_router)
 app.include_router(businesses_router)
 app.include_router(mileage_router)
+app.include_router(documents_router)
 # 
 @app.on_event("startup")
 async def startup():

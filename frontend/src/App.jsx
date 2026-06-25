@@ -10,11 +10,13 @@ import { api } from './services/api'
 import ChatPage from './pages/ChatPage'
 import ExpensesPage from './pages/ExpensesPage'
 import MileagePage from './pages/MileagePage'
+import DocumentsPage from './pages/DocumentsPage'
 
 const TABS = [
   { id: 'chat',     label: 'Ask Luca' },
   { id: 'expenses', label: 'Expenses' },
   { id: 'mileage',  label: 'Mileage'  },
+  { id: 'documents', label: 'Documents' },
 ]
 
 export default function App() {
@@ -74,6 +76,7 @@ export default function App() {
         {activeTab === 'chat'     && <ChatPage     backendStatus={backendStatus} />}
         {activeTab === 'expenses' && <ExpensesPage backendStatus={backendStatus} />}
         {activeTab === 'mileage'   && <MileagePage   backendStatus={backendStatus} />}
+        {activeTab === 'documents' && <DocumentsPage backendStatus={backendStatus} />}
       </main>
 
     </div>

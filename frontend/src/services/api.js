@@ -185,6 +185,54 @@ export const api = {
       console.error('deleteMileageTrip failed:', error);
       return null;
     }
+  },
+
+  // ── Documents ─────────────────────────────────────────────────────────────
+  async uploadDocument(file, businessId) {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('business_id', businessId)
+
+      const response = await fetch(`${API_BASE_URL}/api/documents/upload`, {
+        method: 'POST',
+        body: formData
+        // Note: do NOT set Content-Type header here —
+        // the browser sets it automatically with the correct boundary
+      })
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('uploadDocument failed:', error)
+      return { success: false, message: error.message }
+    }
+  },
+
+  async getDocuments(businessId = null) {
+    try {
+      const url = businessId
+        ? `${API_BASE_URL}/api/documents/?business_id=${businessId}`
+        : `${API_BASE_URL}/api/documents/`
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getDocuments failed:', error)
+      return []
+    }
+  },
+
+  async deleteDocument(docId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/documents/${docId}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('deleteDocument failed:', error)
+      return null
+    }
   }
 
 };
