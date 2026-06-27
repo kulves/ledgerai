@@ -233,6 +233,67 @@ export const api = {
       console.error('deleteDocument failed:', error)
       return null
     }
+  },
+
+  // ── Reports ───────────────────────────────────────────────────────────────
+  async getReportSummary(businessId, startDate = null, endDate = null) {
+    try {
+      let url = `${API_BASE_URL}/api/reports/summary?business_id=${businessId}`
+      if (startDate) url += `&start_date=${startDate}`
+      if (endDate)   url += `&end_date=${endDate}`
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getReportSummary failed:', error)
+      return null
+    }
+  },
+
+  async downloadReportPdf(businessId, startDate = null, endDate = null, watermark = true) {
+    try {
+      let url = `${API_BASE_URL}/api/reports/pdf?business_id=${businessId}&watermark=${watermark}`
+      if (startDate) url += `&start_date=${startDate}`
+      if (endDate)   url += `&end_date=${endDate}`
+
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+
+      // Get filename from Content-Disposition header
+      const disposition = response.headers.get('Content-Disposition') || ''
+      const match = disposition.match(/filename="(.+)"/)
+      const filename = match ? match[1] : 'LedgerAI_Report.pdf'
+
+      // Trigger browser download
+      const blob = await response.blob()
+      const downloadUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = downloadUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(downloadUrl)
+
+      return { success: true, filename }
+    } catch (error) {
+      console.error('downloadReportPdf failed:', error)
+      return { success: false, message: error.message }
+    }
+  },
+
+  // ── Dashboard ──────────────────────────────────────────────────────────────
+  async getDashboard(businessId) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/dashboard/?business_id=${businessId}`
+      )
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getDashboard failed:', error)
+      return null
+    }
   }
 
 };

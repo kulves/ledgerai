@@ -11,17 +11,21 @@ import ChatPage from './pages/ChatPage'
 import ExpensesPage from './pages/ExpensesPage'
 import MileagePage from './pages/MileagePage'
 import DocumentsPage from './pages/DocumentsPage'
+import ReportsPage from './pages/ReportsPage'
+import DashboardPage from './pages/DashboardPage'
 
 const TABS = [
+  { id: 'dashboard', label: 'Dashboard' },
   { id: 'chat',     label: 'Ask Luca' },
   { id: 'expenses', label: 'Expenses' },
   { id: 'mileage',  label: 'Mileage'  },
   { id: 'documents', label: 'Documents' },
+  { id: 'reports',   label: 'Reports'   },
 ]
 
 export default function App() {
   const [backendStatus, setBackendStatus] = useState('checking')
-  const [activeTab, setActiveTab] = useState('chat')
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
     const checkBackend = async () => {
@@ -77,6 +81,13 @@ export default function App() {
         {activeTab === 'expenses' && <ExpensesPage backendStatus={backendStatus} />}
         {activeTab === 'mileage'   && <MileagePage   backendStatus={backendStatus} />}
         {activeTab === 'documents' && <DocumentsPage backendStatus={backendStatus} />}
+        {activeTab === 'reports' && <ReportsPage backendStatus={backendStatus} />}
+        {activeTab === 'dashboard' && (
+          <DashboardPage
+            backendStatus={backendStatus}
+            onNavigate={setActiveTab}
+          />
+      )}
       </main>
 
     </div>

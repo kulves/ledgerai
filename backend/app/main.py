@@ -11,6 +11,8 @@ from backend.app.database import init_db
 from backend.app.routes.expenses import router as expenses_router
 from backend.app.routes.businesses import router as businesses_router
 from backend.app.routes.documents import router as documents_router
+from backend.app.routes.reports import router as reports_router
+from backend.app.routes.dashboard import router as dashboard_router
 
 settings = get_settings()
 logger = get_logger()
@@ -39,6 +41,8 @@ app.include_router(expenses_router)
 app.include_router(businesses_router)
 app.include_router(mileage_router)
 app.include_router(documents_router)
+app.include_router(reports_router)
+app.include_router(dashboard_router)
 # 
 @app.on_event("startup")
 async def startup():
