@@ -12,9 +12,10 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
 
-    # AI
+    # AI — chat uses a lighter text model; vision is only for document OCR
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3.2-vision"
+    ollama_model: str = "llama3"
+    ollama_vision_model: str = "llama3.2-vision"
 
     # Security & Services (loaded from .env)
     app_secret: str = "change-me-in-production"

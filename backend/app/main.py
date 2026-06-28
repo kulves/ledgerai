@@ -13,6 +13,7 @@ from backend.app.routes.businesses import router as businesses_router
 from backend.app.routes.documents import router as documents_router
 from backend.app.routes.reports import router as reports_router
 from backend.app.routes.dashboard import router as dashboard_router
+from backend.app.luca.engine import luca
 
 settings = get_settings()
 logger = get_logger()
@@ -61,11 +62,14 @@ async def root():
 @app.get("/health")
 async def health():
     logger.info("Health check performed")
+    ollama_running = await luca.is_ollama_running()
     return {
         "status": "ok",
         "app": settings.app_name,
         "version": settings.version,
-        "model": settings.ollama_model
+        "ollama_running": ollama_running,
+        "chat_model": settings.ollama_model,
+        "vision_model": settings.ollama_vision_model,
     }
 
 if __name__ == "__main__":

@@ -65,19 +65,23 @@ class LucaEngine:
     1. Text chat — for conversation, categorization, and reasoning
     2. Vision — for reading receipt photos, 1099s, W-2s, and documents
 
-    Both use the same llama3.2-vision model which handles text AND images.
+    Chat uses ollama_model (default llama3). Document OCR uses ollama_vision_model.
     """
 
     def __init__(self):
         """Set up the engine with config values and load the base prompt."""
-        self.model = settings.ollama_model        # "llama3.2-vision"
+        self.chat_model = settings.ollama_model
+        self.vision_model = settings.ollama_vision_model
         self.base_url = settings.ollama_base_url  # "http://localhost:11434"
         self.api_url = f"{self.base_url}/api/generate"
 
         # Load Luca's base personality from prompts/base.txt
         self.base_prompt = load_prompt("base.txt")
 
-        logger.info(f"LucaEngine initialized — model: {self.model}")
+        logger.info(
+            f"LucaEngine initialized — chat: {self.chat_model}, "
+            f"vision: {self.vision_model}"
+        )
 
     async def chat(self, user_message: str, system_prompt: str = None) -> dict:
         """
@@ -108,11 +112,11 @@ class LucaEngine:
         try:
             # Call Ollama's generate endpoint
             # stream=False means we wait for the complete response
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(
                     self.api_url,
                     json={
-                        "model": self.model,
+                        "model": self.chat_model,
                         "prompt": full_prompt,
                         "stream": False,           # Get complete response at once
                         "num_ctx": 512
@@ -121,11 +125,12 @@ class LucaEngine:
 
             # Check if Ollama returned a successful HTTP response
             if response.status_code != 200:
-                logger.error(f"Ollama returned status {response.status_code}")
+                detail = self._ollama_error_detail(response, self.chat_model)
+                logger.error(f"Ollama returned status {response.status_code}: {detail}")
                 return {
                     "success": False,
                     "response": "",
-                    "error": f"Ollama error: HTTP {response.status_code}"
+                    "error": detail
                 }
 
             # Parse the JSON response from Ollama
@@ -147,6 +152,17 @@ class LucaEngine:
                 "success": False,
                 "response": "",
                 "error": "Ollama is not running. Please start Ollama and try again."
+            }
+
+        except httpx.TimeoutException:
+            logger.error(f"Ollama chat timed out waiting for {self.chat_model}")
+            return {
+                "success": False,
+                "response": "",
+                "error": (
+                    f"Ollama is taking too long to respond with {self.chat_model}. "
+                    "The model may still be loading — wait a moment and try again."
+                )
             }
 
         except Exception as e:
@@ -210,7 +226,7 @@ class LucaEngine:
                 response = await client.post(
                     self.api_url,
                     json={
-                        "model": self.model,
+                        "model": self.vision_model,
                         "prompt": vision_prompt,
                         "images": [image_data],   # List of base64-encoded images
                         "stream": False,
@@ -219,12 +235,13 @@ class LucaEngine:
                 )
 
             if response.status_code != 200:
-                logger.error(f"Ollama vision returned status {response.status_code}")
+                detail = self._ollama_error_detail(response, self.vision_model)
+                logger.error(f"Ollama vision returned status {response.status_code}: {detail}")
                 return {
                     "success": False,
                     "extracted_text": "",
                     "response": "",
-                    "error": f"Ollama vision error: HTTP {response.status_code}"
+                    "error": detail
                 }
 
             result = response.json()
@@ -256,6 +273,24 @@ class LucaEngine:
                 "response": "",
                 "error": f"Unexpected error: {str(e)}"
             }
+
+    def _ollama_error_detail(self, response: httpx.Response, model: str) -> str:
+        """Turn an Ollama HTTP error into a user-facing message."""
+        try:
+            body = response.json()
+            message = body.get("error", "").strip()
+        except Exception:
+            message = ""
+
+        if message:
+            if "memory layout cannot be allocated" in message.lower():
+                return (
+                    f"The {model} model could not load into memory. "
+                    "Try restarting Ollama, closing other apps, or using a smaller model."
+                )
+            return f"Ollama error: {message}"
+
+        return f"Ollama error: HTTP {response.status_code}"
 
     async def is_ollama_running(self) -> bool:
         """

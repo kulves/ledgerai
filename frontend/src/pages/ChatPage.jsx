@@ -15,7 +15,8 @@ function createLucaMessage(response) {
   return {
     id: Date.now() + 1, role: 'luca',
     text: response.answer, answered: response.answered,
-    source: response.source, topic: response.topic
+    source: response.source, topic: response.topic,
+    confidenceNote: response.confidence_note,
   }
 }
 function createLoadingMessage() {
@@ -132,6 +133,9 @@ function ChatMessage({ message }) {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
             <span>Source: {message.source}</span>
           </div>
+        )}
+        {!message.answered && message.confidenceNote && (
+          <p className="text-xs text-amber-700 px-1">{message.confidenceNote}</p>
         )}
       </div>
     </div>

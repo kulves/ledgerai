@@ -20,6 +20,7 @@ Connections:
 
 from fastapi import APIRouter
 from pydantic import BaseModel
+import re
 from backend.app.luca.rag_engine import rag_engine
 from backend.app.luca.engine import luca, load_prompt
 from backend.app.logger import get_logger
@@ -64,6 +65,49 @@ NO_MATCH_RESPONSE = (
     "with confidence — I'd recommend asking them directly."
 )
 
+_CONVERSATIONAL_EXACT = {
+    "hello", "hi", "hey", "hiya", "howdy", "yo",
+    "good morning", "good afternoon", "good evening",
+    "thanks", "thank you", "ty", "thx",
+    "help", "what can you do", "what do you do",
+    "who are you",
+}
+
+
+def _is_conversational(question: str) -> bool:
+    """Greetings and small talk — answer with Luca's base personality, not the KB."""
+    text = re.sub(r"[!?.]+$", "", question.strip().lower()).strip()
+    if text in _CONVERSATIONAL_EXACT:
+        return True
+    if len(text.split()) <= 6 and text.startswith(("hi ", "hello ", "hey ", "thanks ")):
+        return True
+    return False
+
+
+def _ollama_failure_response(error: str) -> AskResponse:
+    if "not running" in error.lower():
+        user_message = (
+            "I'm having trouble reaching Ollama. "
+            "Please start the Ollama app and try again."
+        )
+    elif "memory" in error.lower():
+        user_message = (
+            "The AI model could not load into memory. "
+            "Try restarting Ollama or closing other apps, then ask again."
+        )
+    elif "too long to respond" in error.lower():
+        user_message = error
+    else:
+        user_message = (
+            "I'm having trouble generating a response right now. "
+            "Please try again in a moment."
+        )
+    return AskResponse(
+        answered=False,
+        answer=user_message,
+        confidence_note=error,
+    )
+
 
 @router.post("/ask", response_model=AskResponse)
 async def ask_luca(request: AskRequest) -> AskResponse:
@@ -81,6 +125,18 @@ async def ask_luca(request: AskRequest) -> AskResponse:
 
     # STEP 1 — Retrieve fixed verified entry
     match = rag_engine.search(request.question)
+
+    # Greetings / small talk — no KB match needed
+    if match is None and _is_conversational(request.question):
+        logger.info("Conversational message — using base Luca prompt")
+        luca_result = await luca.chat(user_message=request.question)
+        if not luca_result["success"]:
+            logger.error(f"Luca engine failed: {luca_result['error']}")
+            return _ollama_failure_response(luca_result["error"])
+        return AskResponse(
+            answered=True,
+            answer=luca_result["response"].strip(),
+        )
 
     # STEP 4 (early exit) — No match found, return safe fallback
     # This is the anti-hallucination safety net: if nothing verified
@@ -106,18 +162,8 @@ async def ask_luca(request: AskRequest) -> AskResponse:
     )
 
     if not luca_result["success"]:
-        # Ollama itself failed (e.g. not running) — different failure mode
-        # than "no knowledge match". Still never invent an answer.
         logger.error(f"Luca engine failed: {luca_result['error']}")
-        return AskResponse(
-            answered=False,
-            answer=(
-                "I found relevant information but I'm having trouble "
-                "generating a response right now. Please make sure Ollama "
-                "is running, or try again in a moment."
-            ),
-            confidence_note=luca_result["error"]
-        )
+        return _ollama_failure_response(luca_result["error"])
 
     # STEP 4 — Hardcoded source citation + disclaimer, injected by CODE.
     # This line is what guarantees the disclaimer can never be skipped,

@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import OnboardingFlow from './components/OnboardingFlow'
 import { api } from './services/api'
 import ChatPage from './pages/ChatPage'
 import ExpensesPage from './pages/ExpensesPage'
@@ -26,6 +27,9 @@ const TABS = [
 export default function App() {
   const [backendStatus, setBackendStatus] = useState('checking')
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [onboarded, setOnboarded] = useState(
+  () => localStorage.getItem('luca_onboarded') === 'true'
+)
 
   useEffect(() => {
     const checkBackend = async () => {
@@ -36,6 +40,11 @@ export default function App() {
     const interval = setInterval(checkBackend, 8000)
     return () => clearInterval(interval)
   }, [])
+
+  // Show onboarding for first-time users
+if (!onboarded) {
+  return <OnboardingFlow onComplete={() => setOnboarded(true)} />
+}
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
