@@ -14,6 +14,7 @@ import MileagePage from './pages/MileagePage'
 import DocumentsPage from './pages/DocumentsPage'
 import ReportsPage from './pages/ReportsPage'
 import DashboardPage from './pages/DashboardPage'
+import SettingsPage from './pages/SettingsPage'
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -22,6 +23,7 @@ const TABS = [
   { id: 'mileage',  label: 'Mileage'  },
   { id: 'documents', label: 'Documents' },
   { id: 'reports',   label: 'Reports'   },
+  { id: 'settings',  label: 'Settings'  },
 ]
 
 export default function App() {
@@ -95,6 +97,12 @@ if (!onboarded) {
           <DashboardPage
             backendStatus={backendStatus}
             onNavigate={setActiveTab}
+          />
+      )}
+        {activeTab === 'settings' && (
+          <SettingsPage
+            backendStatus={backendStatus}
+            onResetOnboarding={() => setOnboarded(false)}
           />
       )}
       </main>

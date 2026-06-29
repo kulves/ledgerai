@@ -294,6 +294,76 @@ export const api = {
       console.error('getDashboard failed:', error)
       return null
     }
+  },
+
+  // ── Settings ──────────────────────────────────────────────────────────────
+  async getAppInfo() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/settings/info`)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getAppInfo failed:', error)
+      return null
+    }
+  },
+
+  async getStats() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/settings/stats`)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getStats failed:', error)
+      return null
+    }
+  },
+
+  async updateBusiness(businessId, updates) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/settings/businesses/${businessId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates)
+        }
+      )
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('updateBusiness failed:', error)
+      return null
+    }
+  },
+
+  async deactivateBusiness(businessId) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/settings/businesses/${businessId}`,
+        { method: 'DELETE' }
+      )
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('deactivateBusiness failed:', error)
+      return null
+    }
+  },
+
+  async clearAllData(confirmation) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/settings/clear`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmation })
+      })
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('clearAllData failed:', error)
+      return null
+    }
   }
 
 };
