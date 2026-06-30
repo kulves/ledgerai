@@ -15,6 +15,7 @@ from backend.app.routes.reports import router as reports_router
 from backend.app.routes.dashboard import router as dashboard_router
 from backend.app.luca.engine import luca
 from backend.app.routes.settings import router as settings_router
+from backend.app.routes.license import router as license_router
 
 settings = get_settings()
 logger = get_logger()
@@ -46,6 +47,7 @@ app.include_router(documents_router)
 app.include_router(reports_router)
 app.include_router(dashboard_router)
 app.include_router(settings_router)
+app.include_router(license_router)
 # 
 @app.on_event("startup")
 async def startup():

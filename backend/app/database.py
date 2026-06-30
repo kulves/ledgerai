@@ -145,6 +145,27 @@ def init_db() -> None:
         )
     """)
 
+    # ── License table ─────────────────────────────────────────────────────
+    # Single-row table tracking the user's subscription tier.
+    # Starts on Free tier. Updated when a license key is activated
+    # or a Stripe subscription is confirmed.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS license (
+            id                  INTEGER PRIMARY KEY CHECK (id = 1),
+            tier                TEXT    NOT NULL DEFAULT 'free',
+            license_key         TEXT,
+            stripe_customer_id  TEXT,
+            stripe_subscription_id TEXT,
+            activated_at        TEXT,
+            updated_at          TEXT    NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+
+    # Ensure the single license row always exists (id=1, defaults to free)
+    cursor.execute("""
+        INSERT OR IGNORE INTO license (id, tier) VALUES (1, 'free')
+    """)
+
     conn.commit()
     conn.close()
 

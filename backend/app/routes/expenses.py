@@ -36,6 +36,36 @@ def create_expense(expense: ExpenseCreate):
     Log a new expense.
     Called when the user submits the expense form in the frontend.
     """
+    # ── Tier limit check (Bible Section 7 — Free tier: 25 tx/month) ────────
+    from backend.app.models.license import TIER_LIMITS
+    from datetime import date as _date
+
+    today = _date.today()
+    month_start = f"{today.year}-{today.month:02d}-01"
+
+    limit_conn = get_db()
+    try:
+        license_row = limit_conn.execute("SELECT tier FROM license WHERE id = 1").fetchone()
+        tier = license_row["tier"] if license_row else "free"
+        tx_limit = TIER_LIMITS.get(tier, TIER_LIMITS["free"])["monthly_transactions"]
+
+        if tx_limit is not None:
+            tx_count = limit_conn.execute(
+                "SELECT COUNT(*) AS c FROM expenses WHERE date >= ?", (month_start,)
+            ).fetchone()["c"]
+
+            if tx_count >= tx_limit:
+                raise HTTPException(
+                    status_code=402,
+                    detail=(
+                        f"You've reached your Free tier limit of {tx_limit} transactions "
+                        f"this month. Upgrade to Growth ($19.99/month) for unlimited "
+                        f"transactions, or wait until next month."
+                    )
+                )
+    finally:
+        limit_conn.close()
+        
     logger.info(f"Creating expense: {expense.vendor} ${expense.amount}")
 
     conn = get_db()

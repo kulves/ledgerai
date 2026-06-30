@@ -15,6 +15,7 @@ import DocumentsPage from './pages/DocumentsPage'
 import ReportsPage from './pages/ReportsPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
+import SubscriptionPage from './pages/SubscriptionPage'
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -23,6 +24,7 @@ const TABS = [
   { id: 'mileage',  label: 'Mileage'  },
   { id: 'documents', label: 'Documents' },
   { id: 'reports',   label: 'Reports'   },
+  { id: 'subscription', label: 'Subscription' },
   { id: 'settings',  label: 'Settings'  },
 ]
 
@@ -105,6 +107,8 @@ if (!onboarded) {
             onResetOnboarding={() => setOnboarded(false)}
           />
       )}
+        {activeTab === 'subscription' && <SubscriptionPage backendStatus={backendStatus} />}
+        
       </main>
 
     </div>

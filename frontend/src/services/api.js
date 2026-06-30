@@ -364,6 +364,60 @@ export const api = {
       console.error('clearAllData failed:', error)
       return null
     }
+  },
+
+  // ── License & Subscription ──────────────────────────────────────────────────
+  async getLicenseStatus() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/license/status`)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getLicenseStatus failed:', error)
+      return null
+    }
+  },
+
+  async activateLicense(licenseKey) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/license/activate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ license_key: licenseKey })
+      })
+      const data = await response.json()
+      if (!response.ok) return { success: false, message: data.detail || 'Activation failed' }
+      return data
+    } catch (error) {
+      console.error('activateLicense failed:', error)
+      return { success: false, message: error.message }
+    }
+  },
+
+  async createCheckout(tier) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/license/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier })
+      })
+      return await response.json()
+    } catch (error) {
+      console.error('createCheckout failed:', error)
+      return { success: false, message: error.message }
+    }
+  },
+
+  async downgradeLicense() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/license/downgrade`, {
+        method: 'POST'
+      })
+      return await response.json()
+    } catch (error) {
+      console.error('downgradeLicense failed:', error)
+      return null
+    }
   }
 
 };

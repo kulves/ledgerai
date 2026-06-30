@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     stripe_publishable_key: str = "pk_test_placeholder"
     plaid_client_id: str = ""
     plaid_secret: str = ""
+    license_signing_key: str = "change-me-in-production"
 
     # Database
     database_path: str = "database/ledgerai.db"
