@@ -2,7 +2,7 @@ appId: com.ledgerai.luca
 productName: Luca
 
 directories:
-  output: ../../dist
+  output: ../dist-installer
 
 win:
   target: nsis
@@ -19,3 +19,15 @@ files:
   - "dist/**/*"
   - "electron/**/*"
   - "!node_modules"
+
+extraResources:
+  - from: "../backend"
+    to: "app/backend"
+  - from: "../python-embed"
+    to: "python"
+  - from: "../knowledge_base"
+    to: "app/knowledge_base"
+  - from: "../database"
+    to: "app/database"
+  - from: "../.env"
+    to: "app/.env"
