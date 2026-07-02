@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build output — never commit
+dist-installer/
+frontend/dist/
+python-embed/
+frontend/python-embed/
+
+# Electron unpacked
+win-unpacked/
+*.exe
+*.blockmap
