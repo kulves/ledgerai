@@ -1,0 +1,52 @@
+{
+  "id": "s_corp_election",
+  "knowledge_version": "2026.1",
+  "topic": "Entity and Structure",
+  "title": "S-Corp Election — When It Makes Sense and What Changes",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp"
+  ],
+  "irs_source": {
+    "publication": "Publication 589",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p589.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Electing S-corp status allows business owners to split income into salary and distributions, potentially saving self-employment taxes once net profit consistently exceeds roughly $40,000-$50,000 per year.",
+  "content": "An S-corporation election allows your LLC or corporation to be taxed as a pass-through entity with a potential self-employment tax advantage. As a sole proprietor or single-member LLC, 100% of your net profit is subject to self-employment tax (15.3%). With an S-corp election, you split your business income into two parts: a reasonable salary you pay yourself as a W-2 employee (subject to payroll taxes) and distributions of remaining profit (not subject to self-employment tax). For example, if your business earns $100,000 net profit and you pay yourself a $60,000 reasonable salary, only the $60,000 salary is subject to payroll taxes — the remaining $40,000 in distributions avoids self-employment tax, potentially saving $6,000 or more. However, S-corp election adds complexity and cost: you must pay yourself a reasonable market-rate salary, run actual payroll with quarterly payroll tax filings, and file a separate S-corp tax return (Form 1120-S). The general rule of thumb is that S-corp election begins to make financial sense when your net profit consistently exceeds $40,000 to $50,000 per year. Consult a CPA before making this election.",
+  "related_articles": [
+    {
+      "id": "sole_proprietor_vs_llc",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "self_employment_tax",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "qbi_deduction_section_199a",
+      "relationship": "often_used_together"
+    }
+  ],
+  "luca_flags": []
+}

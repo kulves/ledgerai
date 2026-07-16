@@ -1,0 +1,52 @@
+{
+  "id": "bank_fees_and_interest",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Bank Fees and Business Interest Deductions",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 4",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Business bank account fees, merchant processing fees, and interest paid on business loans are fully deductible. Personal loan interest used for business follows different tracing rules.",
+  "content": "Bank and financial fees related to your business are deductible as ordinary and necessary business expenses. Deductible items include monthly business checking or savings account fees, wire transfer fees, overdraft fees on business accounts, merchant processing and credit card transaction fees such as those charged by Stripe, Square, or PayPal, business credit card annual fees, and loan origination fees amortized over the life of the loan. Interest paid on business loans is also deductible — this includes interest on business lines of credit, equipment financing, SBA loans, and business credit cards used for business purchases. The interest deduction applies to the interest portion of payments only, not the principal repayment. If you take out a personal loan and use the funds entirely for business purposes, the interest may be deductible, but you must document that the borrowed funds were used for business. Keep monthly statements and loan documents as records.",
+  "related_articles": [
+    {
+      "id": "business_bank_account_separation",
+      "relationship": "related"
+    },
+    {
+      "id": "home_office_deduction",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_banking"
+  ]
+}

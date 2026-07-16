@@ -1,0 +1,56 @@
+{
+  "id": "depreciation_basics",
+  "knowledge_version": "2026.1",
+  "topic": "Deductions Often Missed",
+  "title": "Depreciation Basics — What It Is and When It Applies",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 946",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p946.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Depreciation allows you to deduct the cost of business assets over their useful life. The IRS assigns recovery periods by asset type — computers 5 years, office furniture 7 years, commercial buildings 39 years.",
+  "content": "Depreciation is the method the IRS uses to allow businesses to deduct the cost of long-lived assets over time, reflecting that the asset gradually wears out or becomes obsolete as it helps generate business income. When you purchase a business asset worth more than $2,500 that has a useful life beyond one year, you generally cannot deduct the full cost immediately unless you use Section 179 or bonus depreciation. Instead, you spread the deduction over the asset's IRS-assigned recovery period using a depreciation method. The most common method is MACRS (Modified Accelerated Cost Recovery System). Under MACRS, the IRS assigns a recovery period to each asset class: 5 years for computers, cars, and light trucks; 7 years for office furniture, fixtures, and most manufacturing equipment; 15 years for land improvements; 27.5 years for residential rental property; and 39 years for commercial real estate. Understanding depreciation matters especially when you sell a depreciated asset — the IRS may require you to pay depreciation recapture tax on the gain attributable to previously claimed depreciation. Luca flags equipment purchases above $2,500 for your CPA to evaluate the best deduction strategy.",
+  "related_articles": [
+    {
+      "id": "section_179_expensing",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "assets_vs_supplies",
+      "relationship": "summarized_by"
+    },
+    {
+      "id": "vehicle_expenses_mileage_vs_actual",
+      "relationship": "expands_on"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_equipment"
+  ]
+}

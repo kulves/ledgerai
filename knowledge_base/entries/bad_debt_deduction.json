@@ -1,0 +1,54 @@
+{
+  "id": "bad_debt_deduction",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Bad Debt Deduction — When Unpaid Invoices Become Deductible",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 10",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Cash basis businesses — the majority of sole proprietors — cannot deduct bad debts because they never reported the unpaid income. Only accrual basis businesses that already reported the income can write off uncollectible receivables.",
+  "content": "A bad debt is money owed to your business that you have been unable to collect and have determined is uncollectible. Whether you can deduct a bad debt depends entirely on your accounting method. If you use the cash basis method (which most sole proprietors do), you report income only when you actually receive payment. This means if a client never pays your invoice, you never reported that income — so there is nothing to deduct. The uncollected invoice is simply removed from your records without a tax deduction. If you use the accrual method, you report income when earned regardless of when you receive payment. If you invoiced a client and reported that income on your return but never collected, you may be able to deduct the uncollectible amount as a bad debt in the year it becomes worthless. To claim a business bad debt deduction on the accrual method, you must show that the debt was related to your business, that you took reasonable steps to collect it, and that you have determined it is truly uncollectible. Discuss deductibility with your CPA based on your accounting method.",
+  "related_articles": [
+    {
+      "id": "accounting_methods_cash_vs_accrual",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

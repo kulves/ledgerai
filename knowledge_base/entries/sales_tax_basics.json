@@ -1,0 +1,54 @@
+{
+  "id": "sales_tax_basics",
+  "knowledge_version": "2026.1",
+  "topic": "Record Keeping and Compliance",
+  "title": "Sales Tax Basics — Nexus, Collection, and Remittance",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "State tax authorities — not IRS",
+    "section": "Sales tax is state-administered, not federal",
+    "url": "https://www.irs.gov/businesses/small-businesses-self-employed/state-and-local-taxes",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": false,
+    "state_specific": true
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Sales tax is administered by individual states, not the IRS. You must collect and remit sales tax in states where you have nexus. Economic nexus rules now apply to online sellers based on sales volume alone.",
+  "content": "Sales tax is a state and local tax, not a federal tax — the IRS is not involved in sales tax collection or enforcement. Each state that has a sales tax sets its own rates, rules about what is taxable, filing deadlines, and penalties. The key concept is nexus — your business must have a sufficient connection to a state before you are required to collect and remit that state's sales tax. Physical nexus arises from a physical presence in a state: an office, warehouse, employees, or inventory stored there. Economic nexus, established by the Supreme Court's 2018 South Dakota v. Wayfair decision, requires sales tax collection based on sales volume or transaction count in a state even without physical presence. Most states have set economic nexus thresholds at $100,000 in annual sales or 200 transactions. Service businesses are often not subject to sales tax, but rules vary significantly by state. Sales tax you collect from customers is not your income — it is held in trust until you remit it to the state. If your business is growing or sells across state lines, consult a CPA or sales tax specialist to evaluate your nexus obligations.",
+  "related_articles": [
+    {
+      "id": "accounting_methods_cash_vs_accrual",
+      "relationship": "related"
+    },
+    {
+      "id": "business_bank_account_separation",
+      "relationship": "related"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

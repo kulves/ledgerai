@@ -1,0 +1,54 @@
+{
+  "id": "sole_proprietor_vs_llc",
+  "knowledge_version": "2026.1",
+  "topic": "Entity and Structure",
+  "title": "Sole Proprietor vs. LLC — Tax Differences and What Changes",
+  "audience": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "irs_source": {
+    "publication": "Publication 3402",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p3402.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "A single-member LLC is taxed identically to a sole proprietorship by default — both report income on Schedule C. The LLC provides legal liability protection but does not change your tax situation unless you elect corporate taxation.",
+  "content": "For federal income tax purposes, a sole proprietorship and a single-member LLC are treated identically by default. Both report business income and expenses on Schedule C, both pay self-employment tax on net profit, and both file taxes through the owner's personal Form 1040. The IRS refers to the single-member LLC as a disregarded entity for tax purposes, meaning it does not file a separate federal tax return. The difference between a sole proprietorship and an LLC is primarily legal, not tax-related. An LLC provides personal liability protection — if your business is sued or cannot pay its debts, your personal assets are generally protected. A sole proprietorship offers no such protection. To maintain that liability protection, you must keep your business and personal finances completely separate. The tax situation changes if you elect to have your LLC taxed as an S-corporation or C-corporation — this requires filing Form 8832 or Form 2553 with the IRS. Consult with an attorney for guidance on whether an LLC is right for your specific situation.",
+  "related_articles": [
+    {
+      "id": "s_corp_election",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "self_employment_tax",
+      "relationship": "related"
+    },
+    {
+      "id": "business_bank_account_separation",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

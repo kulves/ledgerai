@@ -1,0 +1,54 @@
+{
+  "id": "business_bank_account_separation",
+  "knowledge_version": "2026.1",
+  "topic": "Record Keeping and Compliance",
+  "title": "Business Bank Account Separation — Why It Matters Legally and for Taxes",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 583",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p583.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Keeping a dedicated business bank account separate from your personal finances protects your LLC liability shield, simplifies tax preparation, and dramatically improves automatic categorization accuracy in Luca.",
+  "content": "Maintaining a dedicated business checking account is one of the foundational practices of good business financial management. For tax purposes, a separate business account makes it dramatically easier to identify and document deductible business expenses, calculate your net profit, and respond to any IRS inquiries. For LLC owners, separation is essential to maintaining the liability protection your LLC structure provides. If you mix personal and business finances, a court can determine that your LLC is not a genuinely separate entity from you personally — called piercing the corporate veil — and hold you personally liable for business debts. For practical implementation, open a business checking account using your business name and EIN. All business income should be deposited into this account. All business expenses should be paid from this account. Even if you are a sole proprietor with no legal requirement for separation, treating the accounts as completely separate simplifies your bookkeeping dramatically. Additionally, separate bank feeds dramatically improve automatic categorization accuracy — Luca is designed to work most effectively when your business account is the source of your tracked expenses.",
+  "related_articles": [
+    {
+      "id": "business_income_vs_personal",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    },
+    {
+      "id": "sole_proprietor_vs_llc",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

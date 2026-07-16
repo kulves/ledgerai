@@ -1,0 +1,52 @@
+{
+  "id": "eitc_earned_income_credit",
+  "knowledge_version": "2026.1",
+  "topic": "Tax Credits and Benefits",
+  "title": "Earned Income Tax Credit (EITC) — What It Is and Who Generally Qualifies",
+  "audience": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "irs_source": {
+    "publication": "Publication 596",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p596.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The EITC is a refundable federal tax credit for low-to-moderate income workers, including self-employed individuals. The credit amount depends on income, filing status, and number of qualifying children.",
+  "content": "The Earned Income Tax Credit (EITC) is one of the largest refundable tax credits available to working individuals and families. Unlike a deduction that reduces taxable income, a refundable credit directly reduces the amount of tax you owe — and if the credit exceeds your tax liability, you receive the difference as a refund. Self-employed individuals can qualify for the EITC based on their net self-employment income. To qualify for 2026, you must have earned income below the IRS threshold for your filing status and number of qualifying children (check IRS.gov for the current 2026 income limits, as they adjust annually for inflation). You must have a valid Social Security number, be a US citizen or resident alien, not file as Married Filing Separately, and meet investment income limits. The credit is larger for families with qualifying children, but workers without children may also qualify for a smaller credit amount. Luca can flag your account if your income pattern suggests you may qualify for the EITC, but eligibility determination requires review of your complete tax situation. Always confirm eligibility with a tax professional before claiming the credit, as incorrect EITC claims can result in penalties.",
+  "related_articles": [
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    },
+    {
+      "id": "self_employment_tax",
+      "relationship": "related"
+    },
+    {
+      "id": "estimated_quarterly_taxes",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "potential_credit_eitc"
+  ]
+}

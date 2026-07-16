@@ -1,0 +1,54 @@
+{
+  "id": "audit_readiness",
+  "knowledge_version": "2026.1",
+  "topic": "Record Keeping and Compliance",
+  "title": "Audit Readiness — What Luca Helps You Organize and What the IRS Looks For",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 556",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p556.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "An IRS audit is a review of your tax return and supporting records. The best audit defense is organized, complete records maintained year-round. Luca is designed to maintain exactly the documentation the IRS looks for.",
+  "content": "An IRS audit is simply a review of your tax return and the records that support it. Most small business audits are correspondence audits — the IRS mails you a letter asking for documentation of specific items, and you respond by mail. The IRS selects returns for audit based on statistical formulas, computer scoring, and random selection. Certain items commonly trigger scrutiny: unusually high business expenses relative to income, home office deductions, vehicle expenses, cash-intensive businesses, large charitable donations, and net operating losses for multiple consecutive years. The best audit defense is organized, accurate records maintained year-round. What the IRS looks for includes bank statements showing all business income was reported, receipts supporting expense deductions, mileage logs for vehicle deductions, documentation of the business purpose for meals and travel, and copies of contracts for large payments to contractors. Luca is specifically designed to help you maintain these records throughout the year. Every expense logged includes date, vendor, amount, category, and description. Every document uploaded is stored and linked. Every mileage trip includes the business purpose. Together, this helps you maintain the organized documentation that can support your tax positions during an audit.",
+  "related_articles": [
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "digital_receipts_and_electronic_records",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "business_bank_account_separation",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

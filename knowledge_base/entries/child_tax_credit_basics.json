@@ -1,0 +1,52 @@
+{
+  "id": "child_tax_credit_basics",
+  "knowledge_version": "2026.1",
+  "topic": "Tax Credits and Benefits",
+  "title": "Child Tax Credit — General Overview for Self-Employed Filers",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 972",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p972.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "medium",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The Child Tax Credit provides a credit of up to $2,000 per qualifying child under age 17. Self-employed individuals can claim it like any other taxpayer, though it phases out at higher income levels. Verify 2026 amounts with your CPA.",
+  "content": "The Child Tax Credit is a personal tax credit available to taxpayers with qualifying children. For 2026, the credit is generally up to $2,000 per qualifying child under age 17 (verify the current amount at IRS.gov, as this credit has changed multiple times and may be subject to further legislative action). A qualifying child must be under 17 at the end of the tax year, be your dependent, have a valid Social Security number, and meet relationship and residency tests. The credit phases out for higher-income taxpayers — the phase-out begins at $200,000 of modified adjusted gross income for single filers and $400,000 for joint filers. A portion of the credit may be refundable through the Additional Child Tax Credit (ACTC). For self-employed individuals, your net profit from Schedule C is included in your adjusted gross income and affects your eligibility. Luca will flag that this credit may be relevant based on your income level and remind you to discuss it with your CPA at tax time.",
+  "related_articles": [
+    {
+      "id": "eitc_earned_income_credit",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "potential_credit_ctc"
+  ]
+}

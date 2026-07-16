@@ -1,0 +1,54 @@
+{
+  "id": "estimated_quarterly_taxes",
+  "knowledge_version": "2026.1",
+  "topic": "Business Income",
+  "title": "Estimated Quarterly Taxes — Who Pays, When, and How Much",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 505",
+    "section": "Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p505.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Self-employed individuals generally must pay estimated taxes four times per year rather than waiting until April. Missing payments can result in penalties even if you pay in full by the filing deadline.",
+  "content": "If you are self-employed and expect to owe at least $1,000 in federal taxes for the year, you are generally required to pay estimated taxes on a quarterly basis using IRS Form 1040-ES. This is because, unlike employees who have taxes withheld from each paycheck, self-employed individuals receive their income without any withholding. The four estimated tax payment due dates for 2026 are: April 15 (for income earned January 1 through March 31), June 16 (for income earned April 1 through May 31), September 15 (for income earned June 1 through August 31), and January 15, 2027 (for income earned September 1 through December 31). To avoid underpayment penalties, you can use the Safe Harbor rule: pay either 100% of last year's total tax liability spread across four equal payments, or 90% of your current year's expected tax liability — whichever is smaller. Many self-employed individuals set aside 25 to 30 percent of each payment they receive into a separate savings account designated for taxes, then make their quarterly payments from that account. Estimated taxes cover both your income tax and your self-employment tax obligations.",
+  "related_articles": [
+    {
+      "id": "self_employment_tax",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "estimated_tax_penalties",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

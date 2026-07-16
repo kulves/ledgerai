@@ -1,0 +1,54 @@
+{
+  "id": "business_income_vs_personal",
+  "knowledge_version": "2026.1",
+  "topic": "Business Income",
+  "title": "Business Income vs. Personal Income — Keeping Them Separate",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 334",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p334.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Business income is money earned from your business activities. Keeping it separate from personal income protects you legally, simplifies taxes, and is required for accurate bookkeeping.",
+  "content": "Business income is any payment you receive in exchange for goods or services provided through your business — client payments, sales revenue, freelance fees, commissions, and similar receipts. Personal income includes wages from a job, investment returns, rental income from personal property, and other non-business sources. The IRS requires you to report business income accurately on Schedule C. Mixing business and personal finances is one of the most common bookkeeping mistakes and creates serious problems: it makes it nearly impossible to calculate accurate deductions, it can trigger IRS scrutiny, and for LLCs it can compromise the liability protection your business structure is supposed to provide — a concept called piercing the corporate veil. The practical rule is simple: all business income should be received into a dedicated business bank account, and all business expenses should be paid from that same account. Never pay personal bills from your business account or deposit client payments into your personal account. Even for sole proprietors who are not legally required to maintain a separate account, doing so makes bookkeeping dramatically simpler and provides a clean paper trail if you are ever audited.",
+  "related_articles": [
+    {
+      "id": "business_bank_account_separation",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

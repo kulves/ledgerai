@@ -1,0 +1,56 @@
+{
+  "id": "assets_vs_supplies",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Business Assets vs. Supplies — When to Expense vs. Capitalize",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 946",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p946.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Supplies (consumables) are expensed immediately. Assets (equipment, furniture) costing more than $2,500 may need to be capitalized and depreciated, though Section 179 often allows immediate expensing of qualifying items.",
+  "content": "Understanding whether a purchase is a supply or an asset determines how you deduct it on your tax return. Supplies are items used and consumed in business operations within the year — paper, printer ink, postage, cleaning products, and similar consumable items. Supplies are fully deductible as a business expense in the year you buy them. Assets are items with a useful life of more than one year that retain value — computers, laptops, phones, cameras, furniture, machinery, and vehicles. Under the IRS de minimis safe harbor rule, items costing $2,500 or less per unit can be expensed immediately rather than capitalized. Items costing more than $2,500 may need to be capitalized — recorded as assets and deducted over time through depreciation — though elections, exceptions, and capitalization rules can affect this. Consult your CPA for purchases near or above this threshold. However, Section 179 allows you to immediately expense the full cost of qualifying business property in the year you place it in service, up to the annual limit. The practical result is that most small business equipment purchases can be fully deducted in the year of purchase through one of these methods.",
+  "related_articles": [
+    {
+      "id": "section_179_expensing",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "depreciation_basics",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "home_office_deduction",
+      "relationship": "often_used_together"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_equipment"
+  ]
+}

@@ -1,10 +1,54 @@
 {
   "id": "above_below_line_deductions",
-  "topic": "Deduction types",
-  "title": "Above-the-line vs. below-the-line deductions",
-  "source": "IRS Publication 505, IRS Publication 535",
-  "last_verified": "2026-01",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Above-the-Line vs. Below-the-Line Deductions",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 505, Publication 535",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p505.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Above-the-line deductions reduce your Adjusted Gross Income directly and are more powerful because they apply whether you itemize or not. Below-the-line deductions only help if your itemized deductions exceed the standard deduction.",
   "content": "Above-the-line deductions reduce your Adjusted Gross Income (AGI) directly. They are subtracted before your tax rate is applied, which makes them more powerful. Examples for self-employed business owners include business expenses on Schedule C, self-employed health insurance premiums, retirement contributions (SEP-IRA, Solo 401k), and the self-employment tax deduction. These apply whether you itemize or take the standard deduction. Below-the-line deductions are itemized deductions on Schedule A. They only help you if your total itemized deductions exceed the standard deduction for your filing status. Examples include medical expenses over 7.5% of AGI, state and local taxes (SALT, capped at $10,000), mortgage interest, and charitable contributions.",
-  "applies_to": ["sole_prop", "llc", "s_corp", "partnership"],
-  "related_entries": ["qbi_deduction", "schedule_c_expenses", "standard_deduction"]
+  "related_articles": [
+    {
+      "id": "qbi_deduction_section_199a",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "self_employed_health_insurance",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "sep_ira_basics",
+      "relationship": "often_used_together"
+    }
+  ],
+  "luca_flags": []
 }

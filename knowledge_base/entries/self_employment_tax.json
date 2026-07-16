@@ -1,0 +1,54 @@
+{
+  "id": "self_employment_tax",
+  "knowledge_version": "2026.1",
+  "topic": "Business Income",
+  "title": "Self-Employment Tax — What It Is, What It Funds, and the Deduction",
+  "audience": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "irs_source": {
+    "publication": "Publication 334",
+    "section": "Chapter 10",
+    "url": "https://www.irs.gov/pub/irs-pdf/p334.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Self-employment tax is the Social Security and Medicare tax paid by self-employed individuals at 15.3% on net earnings, with a valuable above-the-line deduction for half the amount paid.",
+  "content": "Self-employment (SE) tax is how self-employed individuals contribute to Social Security and Medicare. When you are employed by someone else, your employer pays half of these taxes (7.65%) and withholds the other half from your paycheck. When you are self-employed, you pay both halves — which is why the rate is 15.3%. For 2026, the 15.3% rate applies to net self-employment earnings up to the Social Security wage base limit (verify the current 2026 threshold at IRS.gov, as it adjusts annually for inflation). Earnings above that threshold are subject only to the 2.9% Medicare portion, with an additional 0.9% Medicare surtax applying to earnings over $200,000 single or $250,000 married filing jointly. The good news is that you can deduct half of your self-employment tax as an above-the-line deduction on Form 1040, which reduces your adjusted gross income before calculating income tax. This deduction does not reduce your SE tax itself, but it does reduce your income tax. Self-employment tax is calculated on Schedule SE and filed with your annual tax return.",
+  "related_articles": [
+    {
+      "id": "estimated_quarterly_taxes",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "above_below_line_deductions",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    },
+    {
+      "id": "s_corp_election",
+      "relationship": "compare_with"
+    }
+  ],
+  "luca_flags": []
+}

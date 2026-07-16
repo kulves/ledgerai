@@ -1,0 +1,52 @@
+{
+  "id": "education_and_development",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Education and Professional Development Deductions",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 970",
+    "section": "Chapter 12",
+    "url": "https://www.irs.gov/pub/irs-pdf/p970.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Education expenses that maintain or improve skills required in your current business are deductible. Education that qualifies you for a new career or business is not deductible.",
+  "content": "Self-employed individuals can deduct education and professional development expenses that maintain or improve the skills required in their current trade or business. Deductible expenses include professional courses and workshops directly related to your field, industry conferences and seminars, books and professional publications, online courses and learning platforms, and professional certification renewal costs. The key test is whether the education maintains or improves skills required in your existing business. Education that meets the minimum requirements to enter a new field, or that qualifies you for an entirely new career, does not qualify as a business deduction. Professional memberships and dues paid to trade associations or professional organizations are also generally deductible as a business expense under Publication 535 as long as the membership is ordinary and necessary for your business.",
+  "related_articles": [
+    {
+      "id": "assets_vs_supplies",
+      "relationship": "related"
+    },
+    {
+      "id": "startup_costs_deduction",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_education"
+  ]
+}

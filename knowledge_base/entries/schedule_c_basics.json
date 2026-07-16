@@ -1,0 +1,56 @@
+{
+  "id": "schedule_c_basics",
+  "knowledge_version": "2026.1",
+  "topic": "Business Income",
+  "title": "Schedule C Basics — Profit or Loss From Business",
+  "audience": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "irs_source": {
+    "publication": "Publication 334",
+    "section": "Chapter 1 and Chapter 10",
+    "url": "https://www.irs.gov/pub/irs-pdf/p334.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Schedule C is the IRS form sole proprietors and single-member LLCs use to report business income and expenses, with the net profit flowing to their personal tax return.",
+  "content": "Schedule C (Form 1040), titled Profit or Loss From Business, is the tax form used by sole proprietors and single-member LLCs to report all business income and deductible business expenses. The net profit or net loss calculated on Schedule C flows directly to your personal Form 1040 and is subject to both income tax and self-employment tax. You file one Schedule C per business. If you operate two separate businesses, you file two Schedule C forms. On Schedule C, you report your gross business income at the top, then subtract your allowable business expenses to arrive at net profit or net loss. Common expense categories on Schedule C include advertising, car and truck expenses, commissions, contract labor, depreciation, insurance, legal and professional services, office expenses, rent or lease payments, repairs and maintenance, supplies, taxes and licenses, travel, meals, utilities, and wages paid to employees. The form also has a Part III section for calculating Cost of Goods Sold if your business sells physical products. Schedule C is due with your personal tax return, typically April 15, with extensions available until October 15.",
+  "related_articles": [
+    {
+      "id": "self_employment_tax",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "estimated_quarterly_taxes",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "gross_profit_vs_net_profit",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "business_income_vs_personal",
+      "relationship": "compare_with"
+    }
+  ],
+  "luca_flags": [
+    "expense_logged"
+  ]
+}

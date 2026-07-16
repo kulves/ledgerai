@@ -1,0 +1,54 @@
+{
+  "id": "contractor_vs_employee",
+  "knowledge_version": "2026.1",
+  "topic": "Entity and Structure",
+  "title": "Contractor vs. Employee — The IRS Classification Test",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 15-A",
+    "section": "Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p15a.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The IRS uses three categories — behavioral control, financial control, and type of relationship — to determine whether a worker is an employee or independent contractor. Misclassification carries significant penalties.",
+  "content": "How you classify workers who perform services for your business has significant tax and legal consequences. Independent contractors receive a 1099-NEC and are responsible for their own taxes. Employees receive a W-2 and you must withhold and pay payroll taxes on their behalf. The IRS uses three categories of evidence to determine classification. Behavioral control examines whether you control how work is done — if you dictate when, where, and how someone works, that points to employee status. Financial control examines the business relationship — if the worker can profit or lose money, works for multiple clients, provides their own tools, and is paid by the project, that points to contractor status. Type of relationship examines written contracts, benefits provided, the permanency of the relationship, and whether the work is a core part of your business. No single factor is determinative. Misclassifying an employee as an independent contractor can result in back payroll taxes, interest, and substantial penalties. Many states have their own, often stricter, worker classification tests.",
+  "related_articles": [
+    {
+      "id": "hiring_independent_contractors",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "1099_nec_basics",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "sole_proprietor_vs_llc",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

@@ -1,0 +1,54 @@
+{
+  "id": "business_losses",
+  "knowledge_version": "2026.1",
+  "topic": "Business Income",
+  "title": "Business Losses — Can They Offset Income, and What Are the Rules?",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 334",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p334.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "A business loss occurs when deductible expenses exceed business income. For sole proprietors and single-member LLCs, losses can offset other income on your personal return, subject to at-risk and passive activity rules.",
+  "content": "A business loss occurs when your total deductible business expenses exceed your total business income for the year, resulting in a negative net profit on Schedule C. For sole proprietors and single-member LLCs taxed as sole proprietors, a business loss is reported on your personal Form 1040 and can offset other income sources such as a spouse's wages, investment income, or income from a second job. However, there are important limitations. The at-risk rules (IRC Section 465) limit your deductible losses to the amount you have actually invested in the business or borrowed personally with liability. The passive activity loss rules (IRC Section 469) apply if you do not materially participate in the business. Additionally, if your losses exceed your income in a given year, you may have a Net Operating Loss (NOL) that can be carried forward to future tax years to offset future profits. Yes, you are still required to file even if your business lost money. Luca can help you organize your records, but loss deduction eligibility depends on your specific circumstances and should be reviewed with your CPA.",
+  "related_articles": [
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    },
+    {
+      "id": "hobby_vs_business",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "gross_profit_vs_net_profit",
+      "relationship": "referenced_by"
+    }
+  ],
+  "luca_flags": []
+}

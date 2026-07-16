@@ -1,0 +1,50 @@
+{
+  "id": "work_opportunity_tax_credit",
+  "knowledge_version": "2026.1",
+  "topic": "Tax Credits and Benefits",
+  "title": "Work Opportunity Tax Credit (WOTC) — Business Credit for Hiring Target Groups",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 954",
+    "section": "Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p954.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The WOTC provides a tax credit to businesses that hire employees from certain target groups including veterans, long-term unemployed individuals, and recipients of certain public assistance programs.",
+  "content": "The Work Opportunity Tax Credit (WOTC) is a federal business tax credit available to employers who hire individuals from specific groups that have historically faced barriers to employment. Target groups include qualified veterans, long-term family assistance recipients, designated community residents, vocational rehabilitation referrals, ex-felons, recipients of Supplemental Security Income (SSI), and long-term unemployment recipients. The credit is generally equal to 40% of up to $6,000 in first-year wages for most target groups (maximum credit of $2,400 per qualifying new hire), with higher amounts for qualified veterans and long-term assistance recipients. To claim the credit, you must obtain certification from your state workforce agency. The certification request (Form 8850) must be submitted within 28 days of the employee's start date. The WOTC is a general business credit claimed on Form 3800. The employee must work at least 120 hours for a partial credit, or at least 400 hours for the full credit. If your business does not yet have employees, this credit does not currently apply, but it is worth knowing about as your business grows.",
+  "related_articles": [
+    {
+      "id": "contractor_vs_employee",
+      "relationship": "related"
+    },
+    {
+      "id": "hiring_independent_contractors",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

@@ -1,0 +1,56 @@
+{
+  "id": "hiring_independent_contractors",
+  "knowledge_version": "2026.1",
+  "topic": "Entity and Structure",
+  "title": "Hiring Independent Contractors — W-9, 1099-NEC, and Recordkeeping",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 15-A",
+    "section": "Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p15a.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "When you pay an independent contractor $600 or more in a calendar year, you must collect a W-9 before payment and file a 1099-NEC with the IRS and contractor by January 31 of the following year.",
+  "content": "If your business hires independent contractors, you have specific IRS reporting obligations. Before making any payment, collect a completed Form W-9 from each contractor — it provides their legal name, taxpayer identification number, and address. If you pay any individual contractor $600 or more during the calendar year for services, you must file Form 1099-NEC reporting the total amount paid. The $600 threshold is cumulative across the year. Payments made to corporations (except attorneys) are generally exempt from 1099 reporting requirements. Payments through credit cards or third-party payment networks like PayPal or Stripe are reported by the payment processor on Form 1099-K instead. The deadline for both sending a copy to the contractor and filing with the IRS is January 31 of the year following payment. Failure to file required 1099 forms results in penalties ranging from $60 to $310 per form depending on how late the filing is.",
+  "related_articles": [
+    {
+      "id": "1099_nec_basics",
+      "relationship": "leads_to"
+    },
+    {
+      "id": "contractor_vs_employee",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_professional_services"
+  ]
+}

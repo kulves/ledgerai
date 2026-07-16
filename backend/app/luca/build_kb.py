@@ -85,15 +85,20 @@ def build_knowledge_base():
             normalize_embeddings=True
         ).tolist()
 
+        # Support both old flat schema (source) and new nested schema (irs_source)
+        irs = entry.get("irs_source", {})
+        source = entry.get("source") or irs.get("publication") or "Ledger AI"
+        last_verified = entry.get("last_verified") or irs.get("last_verified") or "2026-01"
+
         collection.add(
             ids=[entry["id"]],
             embeddings=[embedding],
             documents=[entry["content"]],
             metadatas=[{
                 "title": entry["title"],
-                "source": entry["source"],
+                "source": source,
                 "topic": entry["topic"],
-                "last_verified": entry["last_verified"]
+                "last_verified": last_verified
             }]
         )
 

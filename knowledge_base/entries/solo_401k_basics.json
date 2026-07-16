@@ -1,0 +1,54 @@
+{
+  "id": "solo_401k_basics",
+  "knowledge_version": "2026.1",
+  "topic": "Retirement and Benefits",
+  "title": "Solo 401(k) — Higher Contribution Limits for the Self-Employed",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp"
+  ],
+  "irs_source": {
+    "publication": "Publication 560",
+    "section": "Chapter 4",
+    "url": "https://www.irs.gov/pub/irs-pdf/p560.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "A Solo 401(k) allows self-employed individuals with no full-time employees to contribute both as employee and employer, potentially allowing much higher total contributions than a SEP-IRA.",
+  "content": "A Solo 401(k) is available to self-employed individuals and business owners with no full-time employees other than themselves and a spouse. You contribute in two capacities. As an employee of your own business, you can make elective deferrals up to the annual 401(k) limit (confirm the 2026 limit at IRS.gov — the 2025 limit was $23,500, with an additional $7,500 catch-up contribution if age 50 or older). As the employer, you can additionally contribute up to 25% of your net self-employment income. The combined employee and employer contributions cannot exceed the annual defined contribution limit. For high-earning self-employed individuals, the Solo 401(k) can allow significantly larger tax-deductible contributions than a SEP-IRA. Roth contributions are also available with Solo 401(k) plans at many providers. The plan must be established by December 31 of the year you want to make contributions — unlike a SEP-IRA, which can be opened up until your filing deadline.",
+  "related_articles": [
+    {
+      "id": "sep_ira_basics",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "self_employment_tax",
+      "relationship": "related"
+    },
+    {
+      "id": "s_corp_election",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_retirement"
+  ]
+}

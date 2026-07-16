@@ -1,0 +1,57 @@
+{
+  "id": "phone_and_internet_mixed_use",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Phone and Internet — Deducting Mixed-Use Expenses",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 11",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "You can deduct the business-use percentage of your phone and internet bills. If you use your phone 70% for business, you deduct 70% of the monthly cost. A phone used exclusively for business is 100% deductible.",
+  "content": "Your cell phone and internet service are deductible to the extent you use them for business. Because most people use their personal phone and home internet for both business and personal purposes, the IRS requires you to calculate and deduct only the business-use percentage. To determine your business-use percentage for a phone, track your calls or usage for a representative period such as one month and calculate what percentage was for business versus personal use. Apply that percentage to your annual phone bill. For example, if your annual phone bill is $1,200 and you use your phone 70% for business, your deduction is $840. A phone used exclusively for business is 100% deductible. Home internet service follows the same percentage approach. If you work from home and use your internet primarily for business, you may be able to deduct 50 to 80 percent or more of your monthly internet bill. If you claim a home office deduction using the actual expense method, do not double-count your internet costs — they may already be included in your home office calculation.",
+  "related_articles": [
+    {
+      "id": "home_office_deduction",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "assets_vs_supplies",
+      "relationship": "related"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_software_subscriptions",
+    "expense_category_utilities"
+  ]
+}

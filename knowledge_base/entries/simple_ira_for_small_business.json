@@ -1,0 +1,56 @@
+{
+  "id": "simple_ira_for_small_business",
+  "knowledge_version": "2026.1",
+  "topic": "Retirement and Benefits",
+  "title": "SIMPLE IRA — Retirement Plan for Small Businesses With Employees",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 560",
+    "section": "Chapter 3",
+    "url": "https://www.irs.gov/pub/irs-pdf/p560.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "A SIMPLE IRA is available to small businesses with 100 or fewer employees. It requires employer contributions and is easier to administer than a traditional 401(k).",
+  "content": "A SIMPLE IRA (Savings Incentive Match Plan for Employees) is designed for small businesses with 100 or fewer employees who earned at least $5,000 in the prior year. Under a SIMPLE IRA, employees can make salary deferral contributions up to the annual limit (confirm the 2026 limit at IRS.gov — the 2025 limit was $16,500, with a $3,500 catch-up for employees age 50 or older). Employers are required to make contributions using one of two formulas: a dollar-for-dollar matching contribution up to 3% of each participating employee's compensation, or a flat 2% non-elective contribution for all eligible employees regardless of whether they contribute. Employer contributions are immediately 100% vested. You must establish a SIMPLE IRA plan by October 1 of the year you want it to take effect. A SIMPLE IRA is not available if you maintain any other qualified retirement plan at the same time. For solo business owners with no employees, a Solo 401(k) or SEP-IRA generally offers higher contribution limits and more flexibility.",
+  "related_articles": [
+    {
+      "id": "sep_ira_basics",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "solo_401k_basics",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "contractor_vs_employee",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_retirement"
+  ]
+}

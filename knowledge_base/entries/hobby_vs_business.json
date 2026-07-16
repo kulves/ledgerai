@@ -1,0 +1,50 @@
+{
+  "id": "hobby_vs_business",
+  "knowledge_version": "2026.1",
+  "topic": "Entity and Structure",
+  "title": "Hobby vs. Business — The IRS Profit Test and Audit Risk",
+  "audience": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The IRS classifies an activity as a hobby if it lacks a genuine profit motive. Hobby income is taxable but hobby expenses are not deductible. The IRS presumes a business motive if you show profit in 3 of the last 5 years.",
+  "content": "The IRS distinguishes between a business (operated with genuine intent to make a profit) and a hobby (an activity primarily pursued for personal enjoyment). Business losses can offset other income, but hobby losses cannot be deducted at all under current tax law following the Tax Cuts and Jobs Act of 2017. Hobby income, however, must still be reported as taxable income. The IRS uses a safe harbor rule: if your activity shows a profit in at least 3 of the last 5 consecutive tax years (2 of 7 years for horse breeding), it is presumed to be a business. If you do not meet the safe harbor, the IRS considers nine factors including whether you conduct the activity in a businesslike manner, the time and effort you put into it, whether you depend on income from it, your history of income or losses, and elements of personal pleasure or recreation. To protect yourself, operate your activity like a business: maintain a separate bank account, keep organized records, advertise or market your services, and document your efforts to improve profitability.",
+  "related_articles": [
+    {
+      "id": "business_losses",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

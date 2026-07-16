@@ -1,0 +1,50 @@
+{
+  "id": "estimated_tax_penalties",
+  "knowledge_version": "2026.1",
+  "topic": "Business Income",
+  "title": "Estimated Tax Penalties — What Happens If You Don't Pay Quarterly",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 505",
+    "section": "Chapter 4",
+    "url": "https://www.irs.gov/pub/irs-pdf/p505.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Missing or underpaying estimated quarterly taxes results in an IRS underpayment penalty calculated per quarter, even if you pay the full amount by April 15.",
+  "content": "Many self-employed individuals are surprised to learn that paying all their taxes by April 15 is not enough to avoid penalties — the IRS expects quarterly payments throughout the year. If you underpay or skip estimated tax payments, the IRS charges an underpayment penalty for each quarter you fell short. For 2026, the underpayment penalty rate is the federal short-term interest rate plus 3 percentage points, calculated on the amount that should have been paid for each quarter. The penalty is assessed per quarter, so missing Q1 starts accruing a penalty from April 15 even if you pay everything by June. You will not owe a penalty if your total tax liability for the year is less than $1,000, or if you satisfy the Safe Harbor rule — paying either 100% of your prior year's tax liability or 90% of your current year's liability, whichever is smaller. For taxpayers whose prior year adjusted gross income exceeded $150,000, the Safe Harbor threshold increases to 110% of prior year tax. The underpayment penalty is calculated on IRS Form 2210 and functions more like interest on a short-term loan than a criminal penalty.",
+  "related_articles": [
+    {
+      "id": "estimated_quarterly_taxes",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "self_employment_tax",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

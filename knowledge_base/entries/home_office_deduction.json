@@ -1,0 +1,53 @@
+{
+  "id": "home_office_deduction",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Home Office Deduction — Simplified vs. Actual Expense Method",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc"
+  ],
+  "irs_source": {
+    "publication": "Publication 587",
+    "section": "Chapter 1 and Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p587.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The home office deduction allows self-employed individuals to deduct a portion of home expenses for a space used regularly and exclusively for business. Two methods: simplified ($5/sq ft, max 300 sq ft) or actual expenses.",
+  "content": "The home office deduction allows self-employed individuals to deduct expenses related to the portion of their home used for business. To qualify, the space must meet two requirements: regular use (you use it consistently for business, not occasionally) and exclusive use (the space is used only for business and not for personal activities). A dedicated room that is your office qualifies. A kitchen table where you sometimes work does not. The Simplified Method allows you to deduct $5 per square foot of your home office space, up to a maximum of 300 square feet, for a maximum deduction of $1,500. It requires no complex calculations and no depreciation recapture when you sell your home. The Actual Expense Method calculates the percentage of your home used for business and applies that percentage to actual home expenses including rent or mortgage interest, utilities, insurance, repairs, and depreciation. The actual method generally produces a larger deduction but requires more detailed recordkeeping and may trigger depreciation recapture if you sell your home. Important note: employees who work from home cannot claim this deduction — it is available only to self-employed individuals. For S-corp owners who work from home, a different approach involving an accountable plan applies — consult your CPA.",
+  "related_articles": [
+    {
+      "id": "phone_and_internet_mixed_use",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "above_below_line_deductions",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "assets_vs_supplies",
+      "relationship": "often_used_together"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_home_office"
+  ]
+}

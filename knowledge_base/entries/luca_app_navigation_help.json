@@ -1,0 +1,38 @@
+{
+  "id": "luca_app_navigation_help",
+  "knowledge_version": "2026.1",
+  "topic": "Luca App Help",
+  "title": "How to Navigate Luca — Finding Expenses, Reports, Mileage, and Documents",
+  "audience": [
+    "all"
+  ],
+  "applies_to": [
+    "all"
+  ],
+  "app_context": {
+    "feature_area": "Navigation",
+    "app_version": "0.1.0",
+    "last_updated": "2026-07-01"
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": false,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Luca has eight main sections in the navigation bar: Dashboard, Ask Luca, Expenses, Mileage, Documents, Reports, Subscription, and Settings. Each section handles a specific part of your bookkeeping.",
+  "content": "Luca is organized into eight main sections, all accessible from the navigation bar at the top of the app. The Dashboard is your home screen — it shows your total deductions year-to-date, this month's spending, business mileage summary, and recent activity. It updates automatically as you log expenses and trips. The Ask Luca section is your AI tax and bookkeeping assistant. Type any tax or bookkeeping question and Luca will answer from her verified knowledge base. Questions outside the knowledge base are redirected to your CPA. The Expenses section is where you log business transactions. Enter the date, vendor, amount, and a brief description, then click Ask Luca to Categorize and Luca will suggest the IRS category automatically. You can accept her suggestion or choose your own from the dropdown. The Mileage section tracks business driving. Log each trip with the date, miles driven, trip type, and the business purpose. Luca automatically calculates your IRS deduction. The Documents section lets you upload receipts and financial documents. Drag a file onto the upload area or click to browse. Luca will attempt to extract the vendor, amount, and date automatically. The Reports section generates financial summaries. Choose your business and date range, and Luca produces a breakdown by category and a downloadable PDF report. The Subscription section shows your current plan and upgrade options. The Settings section lets you manage your businesses, view data statistics, and reset or clear your data. To switch between businesses, click the business name pill at the top of any page.",
+  "related_articles": [
+    {
+      "id": "luca_receipt_categorization_help",
+      "relationship": "often_used_together"
+    }
+  ],
+  "luca_flags": []
+}

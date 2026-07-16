@@ -1,0 +1,54 @@
+{
+  "id": "irs_record_retention_rules",
+  "knowledge_version": "2026.1",
+  "topic": "Record Keeping and Compliance",
+  "title": "IRS Record Retention Rules — What to Keep and How Long",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 583",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p583.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The IRS generally has 3 years from the filing date to audit your return, but 6 years if you underreported income by more than 25%. Ledger AI recommends keeping all business records for at least 7 years as a conservative default.",
+  "content": "The IRS statute of limitations determines how long the IRS has to audit your tax return and assess additional taxes. Generally, the IRS has 3 years from the date you filed your return to audit and assess additional taxes. The limit extends to 6 years if you omitted more than 25% of your gross income. There is no statute of limitations if you filed a fraudulent return or never filed at all. Ledger AI recommends a seven-year retention period as a simple, conservative default. Different record types may have shorter or longer legal retention requirements under IRS rules — seven years covers the most common audit scenarios safely. Records to keep include copies of filed tax returns, all receipts and invoices supporting business expense deductions, bank and credit card statements, mileage logs, payroll records, 1099 forms issued and received, contracts and agreements, asset purchase records and depreciation schedules, and any correspondence with the IRS. Property records should be kept for as long as you own the property plus 7 years after you sell it. Employment tax records must be kept for at least 4 years. Digital records are fully acceptable to the IRS.",
+  "related_articles": [
+    {
+      "id": "digital_receipts_and_electronic_records",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "audit_readiness",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "business_bank_account_separation",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

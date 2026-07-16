@@ -1,0 +1,52 @@
+{
+  "id": "business_insurance_deductions",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Business Insurance Deductions",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 6",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Business insurance premiums are generally fully deductible as ordinary and necessary business expenses, including general liability, professional liability, commercial property, workers compensation, and business interruption insurance.",
+  "content": "The premiums you pay for insurance that protects your business are generally deductible as ordinary and necessary business expenses. Deductible business insurance types include general liability insurance, professional liability or errors and omissions (E&O) insurance, commercial property insurance, business interruption insurance, commercial auto insurance for business vehicles, workers compensation insurance, cyber liability insurance, and product liability insurance. If you work from home and have added business coverage to your homeowner's or renter's policy, the business-related portion of that rider is deductible. Life insurance premiums are generally not deductible as a business expense if you or your business is the beneficiary. Disability insurance that replaces lost business income is also generally not deductible. Health insurance premiums for self-employed individuals are deductible under a separate provision covered in the self-employed health insurance deduction entry. Insurance premiums must be for the current tax year to be deductible — if you pay a multi-year premium in advance, you can only deduct the portion that applies to the current tax year.",
+  "related_articles": [
+    {
+      "id": "self_employed_health_insurance",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_insurance"
+  ]
+}

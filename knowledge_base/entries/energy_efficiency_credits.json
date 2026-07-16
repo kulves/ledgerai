@@ -1,0 +1,54 @@
+{
+  "id": "energy_efficiency_credits",
+  "knowledge_version": "2026.1",
+  "topic": "Tax Credits and Benefits",
+  "title": "Energy Efficiency Tax Credits — Business and Home Office Overview",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Form 3468 Instructions",
+    "section": "Investment Credit",
+    "url": "https://www.irs.gov/pub/irs-pdf/i3468.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "medium",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Businesses can claim tax credits for qualifying energy-efficient improvements. Energy credit rules are complex and subject to ongoing legislative changes under the Inflation Reduction Act — verify current availability with your CPA.",
+  "content": "Several federal tax credits are available for energy-efficient investments that may apply to your small business or home office. For businesses, the Investment Tax Credit (ITC) under IRC Section 48 provides a credit for qualifying clean energy installations including solar panels, wind energy systems, fuel cells, and energy storage systems. The Alternative Fuel Vehicle Refueling Property Credit may apply if you install electric vehicle charging equipment for business use. For home-based business owners, the Residential Clean Energy Credit (IRC Section 25D) applies to qualifying solar, wind, and battery storage systems at your primary residence. Energy credit rules are among the most complex in the tax code, and many provisions under the Inflation Reduction Act are subject to ongoing legislative changes, phase-outs, and potential expiration. Verify current availability and amounts directly with IRS.gov or your CPA before claiming any energy credit. Luca can help you flag and organize energy-related expenses for your CPA to review, but calculating specific credit amounts requires professional guidance.",
+  "related_articles": [
+    {
+      "id": "home_office_deduction",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "section_179_expensing",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "depreciation_basics",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

@@ -1,0 +1,54 @@
+{
+  "id": "startup_costs_deduction",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Startup Costs Deduction — Up to $5,000 in Your First Year",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 8",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "You can deduct up to $5,000 in startup costs in your first year of business. Costs above $5,000 must be amortized over 180 months. The $5,000 limit phases out if total startup costs exceed $50,000.",
+  "content": "Starting a new business involves costs before you ever earn your first dollar. The IRS allows you to deduct up to $5,000 of these startup costs in your first year of business under IRC Section 195. Startup costs are expenses incurred before your business opens that would be deductible as ordinary business expenses if you were already operating. Examples include costs to investigate starting or buying a business, advertising before opening, employee training wages, travel to find suppliers or customers, and professional fees for business planning or legal setup. Organizational costs — the fees to legally form your LLC or corporation — are separately eligible for an additional $5,000 deduction in year one. Any startup costs above the $5,000 threshold must be amortized ratably over 180 months (15 years) beginning in the month your business opens. If your total startup costs exceed $50,000, the $5,000 first-year deduction phases out dollar for dollar.",
+  "related_articles": [
+    {
+      "id": "section_179_expensing",
+      "relationship": "related"
+    },
+    {
+      "id": "depreciation_basics",
+      "relationship": "related"
+    },
+    {
+      "id": "sole_proprietor_vs_llc",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

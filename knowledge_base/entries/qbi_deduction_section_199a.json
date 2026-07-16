@@ -1,0 +1,58 @@
+{
+  "id": "qbi_deduction_section_199a",
+  "knowledge_version": "2026.1",
+  "topic": "Tax Credits and Benefits",
+  "title": "QBI Deduction (Section 199A) — 20% Deduction for Pass-Through Income",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 12",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The QBI deduction allows eligible pass-through business owners to deduct up to 20% of qualified business income. IMPORTANT: Verify current legislative status for 2026 — the deduction was scheduled to expire after 2025.",
+  "content": "The Qualified Business Income (QBI) deduction under IRC Section 199A allows eligible sole proprietors, single-member LLCs, S-corp shareholders, and partners to deduct up to 20% of their qualified business income on their personal tax return. This is a below-the-line deduction taken on Form 1040, reducing taxable income even if you take the standard deduction. Qualified business income is generally your net business income from domestic operations, excluding capital gains, dividends, and interest income not allocable to the trade or business. For taxpayers below the taxable income threshold (confirm 2026 thresholds at IRS.gov — the 2025 thresholds were $197,300 single and $394,600 joint filers), the deduction is straightforward: 20% of QBI or 20% of taxable income, whichever is smaller. Above the threshold, restrictions apply for Specified Service Trades or Businesses (SSTBs) — which include health, law, consulting, athletics, financial services, and performing arts. IMPORTANT: The QBI deduction was originally scheduled to expire after 2025 under the Tax Cuts and Jobs Act. Verify with your CPA whether this deduction has been extended, modified, or made permanent for the 2026 tax year, as this is subject to active legislative change. Do not assume availability without confirming current law.",
+  "related_articles": [
+    {
+      "id": "above_below_line_deductions",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "sole_proprietor_vs_llc",
+      "relationship": "related"
+    },
+    {
+      "id": "s_corp_election",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

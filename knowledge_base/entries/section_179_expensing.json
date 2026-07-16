@@ -1,0 +1,56 @@
+{
+  "id": "section_179_expensing",
+  "knowledge_version": "2026.1",
+  "topic": "Deductions Often Missed",
+  "title": "Section 179 — Immediate Expensing of Business Equipment",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 946",
+    "section": "Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p946.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Section 179 allows businesses to immediately deduct the full cost of qualifying equipment in the year of purchase. The 2025 limit was $1,160,000 with a phase-out beginning at $2,890,000 — verify the 2026 limit at IRS.gov.",
+  "content": "Section 179 of the Internal Revenue Code allows businesses to immediately expense — deduct in full in the year of purchase — the cost of qualifying business property rather than spreading the deduction over multiple years through depreciation. Qualifying property includes machinery and equipment, computers and technology hardware, office furniture and fixtures, certain vehicles (with limits), and off-the-shelf business software. The property must be placed in service during the tax year — meaning you must actually start using it, not just purchase it. The Section 179 deduction limit is adjusted annually for inflation. For 2026, confirm the exact limit at IRS.gov — as a reference, the 2025 limit was $1,160,000 with a phase-out beginning at $2,890,000 in total equipment purchases. The deduction cannot exceed your net taxable business income for the year — you cannot use Section 179 to create a loss. Vehicles have special limitations under Section 179 — luxury auto caps significantly limit the deduction for passenger vehicles, while larger vehicles like heavy SUVs and trucks have their own separate limits. Luca categorizes equipment purchases and flags them for your CPA to evaluate Section 179 eligibility.",
+  "related_articles": [
+    {
+      "id": "depreciation_basics",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "assets_vs_supplies",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "vehicle_expenses_mileage_vs_actual",
+      "relationship": "compare_with"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_equipment"
+  ]
+}

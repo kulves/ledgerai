@@ -1,0 +1,58 @@
+{
+  "id": "inventory_and_cogs",
+  "knowledge_version": "2026.1",
+  "topic": "Deductions Often Missed",
+  "title": "Inventory and Cost of Goods Sold (COGS) — How It Works for Product Businesses",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 334",
+    "section": "Chapter 6",
+    "url": "https://www.irs.gov/pub/irs-pdf/p334.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "If your business sells physical products, you cannot simply deduct the cost of inventory when you buy it. You calculate Cost of Goods Sold (COGS) — the cost of inventory you actually sold during the year — and deduct that on Schedule C.",
+  "content": "If your business manufactures, purchases, or sells physical products, you must track inventory and calculate Cost of Goods Sold (COGS) rather than simply expensing product purchases as they occur. COGS represents the direct cost of the products you actually sold during the tax year. The basic COGS formula is: Beginning Inventory plus Purchases minus Ending Inventory equals Cost of Goods Sold. For example, if you started the year with $10,000 in inventory, purchased $40,000 more during the year, and ended the year with $8,000 unsold, your COGS is $42,000 — that is what you deduct, not the $40,000 you purchased. The unsold $8,000 remains as an asset and will be deducted in future years when those items are sold. COGS is calculated in Part III of Schedule C. Service businesses with no physical products do not have inventory or COGS. Businesses with annual gross receipts of $27 million or less may qualify for a simplified accounting method that allows immediate expensing of inventory items. Consult your CPA to determine whether the inventory accounting rules apply to your business.",
+  "related_articles": [
+    {
+      "id": "schedule_c_basics",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "accounting_methods_cash_vs_accrual",
+      "relationship": "related"
+    },
+    {
+      "id": "gross_profit_vs_net_profit",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "assets_vs_supplies",
+      "relationship": "compare_with"
+    }
+  ],
+  "luca_flags": []
+}

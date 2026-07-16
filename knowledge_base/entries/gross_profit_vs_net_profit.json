@@ -1,0 +1,58 @@
+{
+  "id": "gross_profit_vs_net_profit",
+  "knowledge_version": "2026.1",
+  "topic": "Business Income",
+  "title": "Gross Profit vs. Net Profit — What Self-Employed Owners Actually Pay Tax On",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 334",
+    "section": "Chapter 10",
+    "url": "https://www.irs.gov/pub/irs-pdf/p334.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Gross profit is total revenue minus cost of goods sold. Net profit is what remains after all business expenses are deducted — and it is the number you pay income tax and self-employment tax on.",
+  "content": "Understanding the difference between gross profit and net profit is fundamental to managing your business taxes. Gross revenue is the total amount your business received from clients or customers before any deductions. Gross profit is gross revenue minus your Cost of Goods Sold (COGS) — relevant if you sell physical products. For service businesses with no inventory, gross profit and gross revenue are often the same number. Net profit (also called net income) is what remains after you subtract all allowable business expenses from gross profit. This is the number that flows to your personal tax return on Schedule C, and it is the number you pay self-employment tax and income tax on. For example, if you earned $80,000 in gross revenue and had $30,000 in deductible business expenses, your net profit is $50,000. You pay taxes on $50,000, not $80,000. This is why accurate expense tracking is so important — every legitimate deductible expense directly reduces the amount of tax you owe.",
+  "related_articles": [
+    {
+      "id": "schedule_c_basics",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "self_employment_tax",
+      "relationship": "related"
+    },
+    {
+      "id": "above_below_line_deductions",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "inventory_and_cogs",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

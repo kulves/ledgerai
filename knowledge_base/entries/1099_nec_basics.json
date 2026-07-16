@@ -1,0 +1,54 @@
+{
+  "id": "1099_nec_basics",
+  "knowledge_version": "2026.1",
+  "topic": "Entity and Structure",
+  "title": "1099-NEC Basics — Who Gets One, When to File, and Penalties",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 1220",
+    "section": "General Instructions for Certain Information Returns",
+    "url": "https://www.irs.gov/pub/irs-pdf/i1099nec.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Form 1099-NEC reports nonemployee compensation paid to contractors. File it when you pay a non-corporate contractor $600 or more in a year. Both the contractor copy and IRS copy are due January 31.",
+  "content": "Form 1099-NEC (Nonemployee Compensation) replaced 1099-MISC Box 7 reporting for contractor payments starting in 2020. You must file a 1099-NEC for each person or unincorporated business to whom you paid $600 or more during the calendar year for services. You are not required to file for payments to C-corporations or S-corporations (except attorneys — attorney fees must always be reported regardless of corporate status). Payments made through credit cards or third-party payment networks like PayPal or Stripe are not reportable on 1099-NEC. The deadline for sending a copy to the contractor and filing with the IRS is January 31 of the year following payment. Penalties for failing to file a correct 1099-NEC range from $60 per form (if filed within 30 days of the deadline) to $310 per form (if not filed by August 1 or filed with incorrect information). Intentional disregard of the filing requirement carries a minimum penalty of $630 per form.",
+  "related_articles": [
+    {
+      "id": "hiring_independent_contractors",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "contractor_vs_employee",
+      "relationship": "referenced_by"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

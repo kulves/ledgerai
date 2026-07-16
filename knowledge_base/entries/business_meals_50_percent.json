@@ -1,0 +1,56 @@
+{
+  "id": "business_meals_50_percent",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Business Meals — The 50% Rule and Documentation Requirements",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 463",
+    "section": "Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p463.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Business meals are generally 50% deductible when they have a clear business purpose and you document who attended, what was discussed, and the business relationship. Entertainment expenses remain non-deductible.",
+  "content": "Business meals are 50% deductible when they meet IRS requirements. The meal must have a clear and ordinary business purpose — discussing a project with a client, meeting a potential business partner, or working through a business matter with an employee. The business owner or an employee must be present at the meal. Entertainment expenses such as sporting events, concerts, or shows have been non-deductible since the Tax Cuts and Jobs Act of 2017. For a meal to be deductible, you must document four things: the amount spent (keep the receipt), the date and location, the business purpose of the meal, and the name and business relationship of everyone who attended. Meals while traveling overnight on business are also 50% deductible. When in doubt about a specific meal situation, consult your CPA — meal deduction rules have changed multiple times in recent years.",
+  "related_articles": [
+    {
+      "id": "business_travel_vs_commuting",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    },
+    {
+      "id": "digital_receipts_and_electronic_records",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_meals"
+  ]
+}

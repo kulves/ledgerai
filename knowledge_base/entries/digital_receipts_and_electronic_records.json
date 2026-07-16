@@ -1,0 +1,56 @@
+{
+  "id": "digital_receipts_and_electronic_records",
+  "knowledge_version": "2026.1",
+  "topic": "Record Keeping and Compliance",
+  "title": "Digital Receipts and Electronic Records — IRS Acceptance and Best Practices",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Revenue Procedure 98-25",
+    "section": "Section 4",
+    "url": "https://www.irs.gov/pub/irs-pdf/p583.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "The IRS fully accepts digital and scanned receipts as valid documentation. You do not need to keep paper originals as long as digital copies are legible, accurate, and accessible if requested.",
+  "content": "The IRS officially accepts digital and electronic records as valid documentation for tax purposes under Revenue Procedure 98-25 and subsequent guidance. This means you do not need to keep paper receipts — a clear photo or scan of a receipt carries the same legal weight as the original paper document. For a digital receipt to satisfy IRS requirements, it must be a complete and accurate image of the original document, be legible and contain all relevant information (vendor, date, amount, and description), be stored in a format that can be reproduced and presented to the IRS if requested, and be kept for the required retention period. Email receipts from vendors are also fully acceptable as long as you retain them. Luca's document upload feature stores both the original uploaded image and the extracted OCR data. This means if an auditor requests to see the original receipt, it is available — the OCR extraction is a convenience layer, not a replacement for the source document. Paper receipts printed on thermal paper are especially prone to fading, making digital capture particularly important for those receipts.",
+  "related_articles": [
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "audit_readiness",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "business_meals_50_percent",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "document_uploaded"
+  ]
+}

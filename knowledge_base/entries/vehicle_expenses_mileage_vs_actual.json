@@ -1,0 +1,61 @@
+{
+  "id": "vehicle_expenses_mileage_vs_actual",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Vehicle Expenses — Standard Mileage Rate vs. Actual Expense Method",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 463",
+    "section": "Chapter 4",
+    "url": "https://www.irs.gov/pub/irs-pdf/p463.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "You can deduct business vehicle costs using the standard mileage rate (72.5 cents per mile for 2026) or actual expenses. You must choose your method in the first year you use the vehicle for business.",
+  "content": "If you use a vehicle for business purposes, you can deduct those costs using one of two methods. The Standard Mileage Rate method for 2026 is 72.5 cents per business mile driven. This rate covers gas, depreciation, insurance, repairs, and all other vehicle costs — you cannot separately deduct those items if you use this method. You can still separately deduct parking fees and tolls paid for business purposes. The Actual Expense Method allows you to deduct the actual costs of operating your vehicle for business, including gas, oil, repairs, insurance, registration fees, and depreciation, multiplied by the percentage of miles driven for business versus total miles. You must choose your method in the first year you place the vehicle in service for business. Once you use the actual expense method for a vehicle, you generally cannot switch to standard mileage for that vehicle in future years. Regardless of which method you use, you must maintain a mileage log documenting the date, destination, business purpose, and miles driven for each business trip. Luca's mileage tracker is designed to capture exactly this information.",
+  "related_articles": [
+    {
+      "id": "business_travel_vs_commuting",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "section_179_expensing",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "depreciation_basics",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "mileage_logged",
+    "expense_category_vehicle"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "id": "self_employed_health_insurance",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Self-Employed Health Insurance Deduction",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 535",
+    "section": "Chapter 6",
+    "url": "https://www.irs.gov/pub/irs-pdf/p535.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Self-employed individuals can deduct 100% of health, dental, and vision insurance premiums paid for themselves and their family as an above-the-line deduction, reducing adjusted gross income directly.",
+  "content": "If you are self-employed and not eligible for employer-sponsored health insurance through a spouse's job or your own W-2 employment, you can deduct 100% of premiums you pay for health, dental, and vision insurance for yourself, your spouse, your dependents, and children under age 27. This is an above-the-line deduction — it reduces your adjusted gross income directly on Form 1040, regardless of whether you itemize or take the standard deduction. However, it does not reduce your self-employment tax, only your income tax. The deduction cannot exceed your net profit from the business. If you had a loss for the year, you cannot claim this deduction for that period. You also cannot deduct premiums for any month in which you were eligible for coverage through an employer including a spouse's employer. Premiums paid through a Marketplace plan qualify. Long-term care insurance premiums also qualify up to age-based limits. For S-corp owner-employees, the deduction works differently — your corporation must pay or reimburse the premiums and include the amount in your W-2 wages, then you deduct it on your personal return.",
+  "related_articles": [
+    {
+      "id": "above_below_line_deductions",
+      "relationship": "expands_on"
+    },
+    {
+      "id": "self_employment_tax",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "sep_ira_basics",
+      "relationship": "often_used_together"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_medical"
+  ]
+}

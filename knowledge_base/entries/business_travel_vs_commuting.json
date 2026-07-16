@@ -1,0 +1,56 @@
+{
+  "id": "business_travel_vs_commuting",
+  "knowledge_version": "2026.1",
+  "topic": "Business Deductions",
+  "title": "Business Travel vs. Commuting — What's Deductible and What Isn't",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 463",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p463.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Business travel away from your tax home overnight is deductible. Daily commuting between your home and your regular place of business is never deductible, even if you work from home part-time.",
+  "content": "The IRS draws a clear line between deductible business travel and non-deductible commuting. Business travel is travel away from your tax home that requires you to be away overnight or long enough that you need rest before continuing work. All ordinary and necessary expenses for business travel are deductible, including airfare, hotels, taxis, rental cars, 50% of meal costs while traveling, and baggage fees. Commuting is the daily trip between your home and your regular place of business — it is never deductible, regardless of how far you travel. If you have a qualifying home office that is your principal place of business, trips from your home office to meet clients or visit other business locations may qualify as deductible business travel rather than commuting. For mixed personal and business trips, you can deduct the business portion of transportation costs. Keep receipts and a log for all travel expenses, noting the business purpose of each trip.",
+  "related_articles": [
+    {
+      "id": "vehicle_expenses_mileage_vs_actual",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "business_meals_50_percent",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_travel"
+  ]
+}

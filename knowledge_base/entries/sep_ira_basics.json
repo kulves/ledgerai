@@ -1,0 +1,56 @@
+{
+  "id": "sep_ira_basics",
+  "knowledge_version": "2026.1",
+  "topic": "Retirement and Benefits",
+  "title": "SEP-IRA — Contribution Limits, Deadlines, and Who Can Contribute",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 560",
+    "section": "Chapter 2",
+    "url": "https://www.irs.gov/pub/irs-pdf/p560.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "A SEP-IRA allows self-employed individuals to contribute up to 25% of net self-employment income (up to the annual IRS limit) to a tax-deductible retirement account, with contributions allowed up to the tax filing deadline including extensions.",
+  "content": "A Simplified Employee Pension IRA (SEP-IRA) is one of the most accessible and powerful retirement savings tools for self-employed individuals. Contributions are tax-deductible and the funds grow tax-deferred until withdrawal in retirement. For 2026, the contribution limit is the lesser of 25% of net self-employment income or the annual dollar limit set by the IRS (confirm the current 2026 limit at IRS.gov — the 2025 limit was $70,000). For sole proprietors and single-member LLCs, the actual contribution percentage works out to approximately 20% of net self-employment income after the self-employment tax deduction. You can make contributions up to your tax filing deadline including extensions — for sole proprietors that means until October 15 of the following year. This flexibility lets you decide how much to contribute after you know your final income for the year. If you have employees, you must also make contributions for eligible employees at the same percentage rate as you contribute for yourself.",
+  "related_articles": [
+    {
+      "id": "solo_401k_basics",
+      "relationship": "compare_with"
+    },
+    {
+      "id": "self_employed_health_insurance",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "above_below_line_deductions",
+      "relationship": "expands_on"
+    }
+  ],
+  "luca_flags": [
+    "expense_category_retirement"
+  ]
+}

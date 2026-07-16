@@ -1,0 +1,54 @@
+{
+  "id": "accounting_methods_cash_vs_accrual",
+  "knowledge_version": "2026.1",
+  "topic": "Record Keeping and Compliance",
+  "title": "Accounting Methods — Cash Basis vs. Accrual Basis",
+  "audience": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "applies_to": [
+    "sole_prop",
+    "single_member_llc",
+    "s_corp",
+    "partnership"
+  ],
+  "irs_source": {
+    "publication": "Publication 538",
+    "section": "Chapter 1",
+    "url": "https://www.irs.gov/pub/irs-pdf/p538.pdf",
+    "last_verified": "2026-07-01",
+    "tax_year": 2026
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": true,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Most small businesses use the cash basis method, where income is recorded when received and expenses when paid. The accrual method records income when earned and expenses when incurred, regardless of when money changes hands.",
+  "content": "Your accounting method determines when you report income and expenses on your tax return. Under the cash basis method, you report income in the year you actually receive payment and deduct expenses in the year you actually pay them. This is the simpler method and is used by most sole proprietors and small businesses. Under the accrual method, you report income when it is earned and deduct expenses when they are incurred, regardless of when money actually changes hands. Most small businesses use the cash basis method. C-corporations with average annual gross receipts exceeding $30 million are generally required to use the accrual method. Businesses with inventory may be required to use the accrual method for purchases and sales. Once you choose an accounting method, you must get IRS approval (Form 3115) to change it. By default, Luca records transactions using the cash basis method, although future versions may support accrual accounting for businesses that require it.",
+  "related_articles": [
+    {
+      "id": "schedule_c_basics",
+      "relationship": "related"
+    },
+    {
+      "id": "inventory_and_cogs",
+      "relationship": "related"
+    },
+    {
+      "id": "irs_record_retention_rules",
+      "relationship": "related"
+    }
+  ],
+  "luca_flags": []
+}

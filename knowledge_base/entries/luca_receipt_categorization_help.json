@@ -1,0 +1,45 @@
+{
+  "id": "luca_receipt_categorization_help",
+  "knowledge_version": "2026.1",
+  "topic": "Luca App Help",
+  "title": "How to Use Luca to Categorize Receipts and Analyze Documents",
+  "audience": [
+    "all"
+  ],
+  "applies_to": [
+    "all"
+  ],
+  "app_context": {
+    "feature_area": "Documents and Expenses",
+    "app_version": "0.1.0",
+    "last_updated": "2026-07-01"
+  },
+  "jurisdiction": {
+    "country": "US",
+    "federal": false,
+    "state_specific": false
+  },
+  "confidence": "high",
+  "review_status": "Approved — v1.0",
+  "last_reviewed_by": [
+    "Claude (Anthropic)",
+    "Grok (xAI)",
+    "ChatGPT (OpenAI)"
+  ],
+  "summary": "Luca can read receipt images and extract financial information automatically. Upload receipts in the Documents section, or log an expense and click Ask Luca to Categorize to get an AI-suggested IRS category.",
+  "content": "Luca has two ways to help you categorize receipts and financial documents. The first is the Documents section, where you can upload photos or scans of receipts, invoices, and other financial documents. To upload, click the Documents tab, make sure your business is selected, then drag a file onto the upload area or click to browse your files. Supported formats are JPG, PNG, and PDF up to 10MB. Once uploaded, Luca's vision AI reads the document and attempts to extract the vendor name, total amount, date, and document type. The extraction results appear below the upload area. You can then go to the Expenses tab and log the expense using the extracted information. The second way is the Ask Luca to Categorize button in the Expenses section. When you enter a vendor name, amount, and optional description and click that button, Luca analyzes the information and suggests an IRS expense category, a confidence level (high, medium, or low), whether the expense is likely deductible, and notes explaining her reasoning. You can accept her suggestion or override it with your own choice from the dropdown. For best categorization results, include a description of what the expense was for — for example, Client meeting lunch gives Luca much better context than just Starbucks. If Luca marks an expense as low confidence or flags it for review, it means she is uncertain and wants you to verify the category manually.",
+  "related_articles": [
+    {
+      "id": "luca_app_navigation_help",
+      "relationship": "often_used_together"
+    },
+    {
+      "id": "digital_receipts_and_electronic_records",
+      "relationship": "expands_on"
+    }
+  ],
+  "luca_flags": [
+    "document_uploaded",
+    "expense_logged"
+  ]
+}
