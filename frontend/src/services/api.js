@@ -22,22 +22,26 @@ export const api = {
   },
 
   // ── Luca chat ────────────────────────────────────────────────────────────
-  async askLuca(question) {
+  async askLuca(question, messages = [], businessName = null) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/luca/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question })
-      });
-      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
-      return await response.json();
+        body: JSON.stringify({
+          question,
+          messages,
+          business_name: businessName
+        })
+      })
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
     } catch (error) {
-      console.error('askLuca failed:', error);
+      console.error('askLuca failed:', error)
       return {
         answered: false,
-        answer: 'I had trouble connecting to the backend. Please make sure the server is running.',
-        source: null, topic: null, confidence_note: error.message
-      };
+        answer: 'Connection error. Please check the backend is running.',
+        source: null
+      }
     }
   },
 

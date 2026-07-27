@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # AI — chat uses a lighter text model; vision is only for document OCR
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3"
+    ollama_model: str = "llama3.2:1b"
     ollama_vision_model: str = "llama3.2-vision"
 
     # Security & Services (loaded from .env)
