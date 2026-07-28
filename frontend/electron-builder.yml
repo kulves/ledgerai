@@ -5,6 +5,7 @@ directories:
   output: ../dist-installer
 
 win:
+  icon: public/luca.ico
   target: nsis
   artifactName: Luca-Setup-${version}.exe
 

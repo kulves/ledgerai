@@ -60,6 +60,7 @@ function createLoadingWindow() {
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     title: 'Luca',
+    icon: path.join(__dirname, '../public/luca.ico'),
     width: 1280,
     height: 800,
     minWidth: 1024,
