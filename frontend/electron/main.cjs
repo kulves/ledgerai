@@ -28,11 +28,16 @@ const PYTHON_PATH = isDev
   ? path.join(__dirname, '../../venv/Scripts/python.exe')
   : path.join(process.resourcesPath, 'python', 'python.exe')
 
+const APP_ICON = isDev
+  ? path.join(__dirname, '../public/Luca.ico')
+  : path.join(__dirname, '../dist/Luca.ico')
+
 // ── Loading screen ─────────────────────────────────────────────────────────
 function createLoadingWindow() {
   loadingWindow = new BrowserWindow({
     width: 420,
     height: 320,
+    icon: APP_ICON,
     frame: false,
     resizable: false,
     backgroundColor: '#0C2340',
@@ -60,9 +65,9 @@ function createLoadingWindow() {
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     title: 'Luca',
-    icon: path.join(__dirname, '../public/luca.ico'),
     width: 1280,
     height: 800,
+    icon: APP_ICON,
     minWidth: 1024,
     minHeight: 700,
     backgroundColor: '#FAFAF8',
@@ -84,6 +89,10 @@ function createMainWindow() {
   // Loaded pages can overwrite BrowserWindow title (e.g. stale dist/index.html).
   mainWindow.on('page-title-updated', (event) => {
     event.preventDefault()
+    mainWindow.setTitle('Luca')
+  })
+
+  mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.setTitle('Luca')
   })
 
@@ -146,6 +155,7 @@ function checkOllama() {
 function startBackend() {
   console.log('Starting backend with Python:', PYTHON_PATH)
   console.log('Working directory:', PROJECT_ROOT)
+  const { DEBUG: _ignoredDebug, ...backendEnv } = process.env
 
   backendProcess = spawn(
     PYTHON_PATH,
@@ -154,7 +164,7 @@ function startBackend() {
       cwd: PROJECT_ROOT,
       shell: false,
       env: {
-        ...process.env,
+        ...backendEnv,
         PYTHONPATH: PROJECT_ROOT,
       }
     }
