@@ -13,289 +13,462 @@
  *   - Expenses needing review
  *   - Recent activity feed
  *   - Quick action buttons
+ * DashboardPage.jsx — LedgerPro-style Dashboard
+ * Batch 2: Stat cards, Cash Flow line chart, Expenses by Category donut,
+ * Recent Transactions list. All colors use CSS variables for dark/light.
  */
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '../services/api'
-
-export default function DashboardPage({ backendStatus, onNavigate }) {
-  const [businesses, setBusinesses]             = useState([])
-  const [selectedBiz, setSelectedBiz]           = useState(null)
-  const [data, setData]                         = useState(null)
-  const [loading, setLoading]                   = useState(true)
-
-  // Load businesses then dashboard data
+import {
+  Chart as ChartJS,
+  CategoryScale, LinearScale, PointElement, LineElement,
+  ArcElement, Tooltip, Legend, Filler
+} from 'chart.js'
+import { Line, Doughnut } from 'react-chartjs-2'
+ 
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler)
+ 
+// ── Icons ────────────────────────────────────────────────────────────────────
+const UpArrow = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+  </svg>
+)
+const DownArrow = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="7" y1="7" x2="17" y2="17"/><polyline points="17 7 17 17 7 17"/>
+  </svg>
+)
+const DollarIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+  </svg>
+)
+const FileIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+  </svg>
+)
+const CarIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v9a2 2 0 01-2 2h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
+  </svg>
+)
+const TrendIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+  </svg>
+)
+ 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n || 0)
+const fmtMono = (n) => fmt(n).replace('$', '')
+ 
+const CATEGORY_COLORS = [
+  '#22D3EE','#34D399','#A78BFA','#FBBF24','#FB7185',
+  '#F97316','#60A5FA','#E879F9','#4ADE80','#FCD34D'
+]
+ 
+export default function DashboardPage({ selectedBusiness, onSelectBusiness, businesses, onNavigate }) {
+  const [stats, setStats] = useState(null)
+  const [expenses, setExpenses] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState('year')
+ 
   useEffect(() => {
-    api.getBusinesses().then(bizList => {
-      if (bizList && bizList.length > 0) {
-        setBusinesses(bizList)
-        setSelectedBiz(bizList[0])
-      } else {
-        setLoading(false)
-      }
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!selectedBiz) return
+    if (selectedBusiness) loadData()
+  }, [selectedBusiness, period])
+ 
+  const loadData = async () => {
     setLoading(true)
-    api.getDashboard(selectedBiz.id).then(d => {
-      setData(d)
-      setLoading(false)
-    })
-  }, [selectedBiz])
-
-  // ── Empty state — no businesses yet ──────────────────────────────────────
-  if (!loading && businesses.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-6 px-8 text-center">
-        <div className="w-20 h-20 rounded-full bg-[#0C2340] flex items-center justify-center text-[#C9962C] text-4xl font-bold">
-          L
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-[#0C2340] mb-2">Welcome to Luca</h2>
-          <p className="text-gray-500 text-sm max-w-sm">
-            Your local-first AI bookkeeping assistant. Start by adding
-            your first business in the Expenses tab.
-          </p>
-        </div>
-        <button
-          onClick={() => onNavigate('expenses')}
-          className="bg-[#C9962C] hover:bg-[#B88A24] text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all"
-        >
-          Add Your First Business
-        </button>
-      </div>
-    )
+    try {
+      const [dashData, expData] = await Promise.all([
+        api.getDashboard(selectedBusiness?.id),
+        api.getExpenses(selectedBusiness?.id),
+      ])
+      setStats(dashData)
+      setExpenses(expData || [])
+    } catch (e) {}
+    setLoading(false)
   }
-
+ 
+  // ── Build chart data from expenses ──────────────────────────────────────
+  const buildCashFlowData = () => {
+    const monthlyTotals = {}
+    expenses.forEach(e => {
+      const month = (e.date || '').slice(0, 7)
+      if (month) monthlyTotals[month] = (monthlyTotals[month] || 0) + (e.amount || 0)
+    })
+    const sorted = Object.keys(monthlyTotals).sort()
+    const last6 = sorted.slice(-7)
+    return {
+      labels: last6.length ? last6 : ['No data'],
+      datasets: [{
+        label: 'Expenses',
+        data: last6.map(m => monthlyTotals[m]),
+        borderColor: '#22D3EE',
+        backgroundColor: 'rgba(34,211,238,0.08)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#22D3EE',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      }]
+    }
+  }
+ 
+  const buildCategoryData = () => {
+    const cats = {}
+    expenses.forEach(e => {
+      const cat = e.category || 'Other'
+      cats[cat] = (cats[cat] || 0) + (e.amount || 0)
+    })
+    const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 8)
+    return {
+      labels: sorted.map(([k]) => k),
+      datasets: [{
+        data: sorted.map(([, v]) => v),
+        backgroundColor: CATEGORY_COLORS,
+        borderWidth: 0,
+        hoverOffset: 6,
+      }]
+    }
+  }
+ 
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(17,24,39,0.95)',
+        titleColor: '#94A3B8',
+        bodyColor: '#F1F5F9',
+        borderColor: 'rgba(34,211,238,0.2)',
+        borderWidth: 1,
+        padding: 12,
+        callbacks: {
+          label: ctx => ` $${Number(ctx.raw).toFixed(2)}`
+        }
+      }
+    }
+  }
+ 
+  const lineOptions = {
+    ...chartDefaults,
+    scales: {
+      x: {
+        grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+        ticks: { color: '#475569', font: { size: 11 } },
+      },
+      y: {
+        grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+        ticks: {
+          color: '#475569', font: { size: 11 },
+          callback: v => `$${v.toLocaleString()}`
+        },
+        beginAtZero: true,
+      }
+    }
+  }
+ 
+  const donutOptions = {
+    ...chartDefaults,
+    cutout: '72%',
+    plugins: {
+      ...chartDefaults.plugins,
+      tooltip: {
+        ...chartDefaults.plugins.tooltip,
+        callbacks: { label: ctx => ` ${ctx.label}: $${Number(ctx.raw).toFixed(2)}` }
+      }
+    }
+  }
+ 
+  const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0)
+  const totalDeductible = expenses.filter(e => e.deductible !== false).reduce((s, e) => s + (e.amount || 0), 0)
+  const mileageDeduction = stats?.mileage_deduction || 0
+  const totalDeductions = totalDeductible + mileageDeduction
+ 
+  const statCards = [
+    {
+      label: 'Total Expenses', value: fmt(totalExpenses),
+      sub: `${expenses.length} transactions`,
+      icon: <DownArrow />, iconBg: 'rgba(251,113,133,0.15)', iconColor: '#FB7185',
+    },
+    {
+      label: 'Total Deductible', value: fmt(totalDeductible),
+      sub: 'Expense deductions',
+      icon: <UpArrow />, iconBg: 'rgba(34,211,238,0.12)', iconColor: '#22D3EE',
+    },
+    {
+      label: 'Mileage Deduction', value: fmt(mileageDeduction),
+      sub: `${stats?.total_miles || 0} miles`,
+      icon: <CarIcon />, iconBg: 'rgba(167,139,250,0.15)', iconColor: '#A78BFA',
+    },
+    {
+      label: 'Total Deductions', value: fmt(totalDeductions),
+      sub: 'Expenses + mileage',
+      icon: <TrendIcon />, iconBg: 'rgba(201,150,44,0.15)', iconColor: '#C9962C',
+      highlight: true,
+    },
+  ]
+ 
+  const recentExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6)
+  const hasCategoryData = expenses.length > 0
+  const cashFlowData = buildCashFlowData()
+  const categoryData = buildCategoryData()
+ 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="max-w-3xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
-
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h2 className="text-xl font-bold text-[#0C2340]">
-              {loading ? '...' : `Good to see you`}
-            </h2>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {data ? `${data.period.year_start} — ${data.period.today}` : 'Loading...'}
-            </p>
+    <div className="flex flex-col gap-6 p-6" style={{ minHeight: '100%' }}>
+ 
+      {/* Page header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1" style={{ color: 'var(--text-2)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em' }}>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/>
+              <rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>
+            </svg>
+          
           </div>
-
-          {/* Business selector */}
-          <div className="flex gap-2 flex-wrap">
-            {businesses.map(b => (
-              <button key={b.id} onClick={() => setSelectedBiz(b)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  selectedBiz?.id === b.id
-                    ? 'bg-[#0C2340] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}>
-                {b.name}
-              </button>
-            ))}
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-0)', fontFamily: 'var(--font-display)' }}>
+            Welcome back, {selectedBusiness?.name?.split(' ')[0] || 'Astrid'} 
+          </h1>
+        </div>
+ 
+        {/* Quick actions */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onNavigate('expenses')}
+            className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: 'var(--accent-muted)',
+              border: '1px solid rgba(34,211,238,0.2)',
+              color: 'var(--accent)'
+            }}
+          >
+            + Log Expense
+          </button>
+          <button
+            onClick={() => onNavigate('reports')}
+            className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-1)'
+            }}
+          >
+            View Reports
+          </button>
+        </div>
+      </div>
+ 
+      {/* Business selector */}
+      {businesses?.length > 1 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>Business:</span>
+          {businesses.map(b => (
+            <button
+              key={b.id}
+              onClick={() => onSelectBusiness(b)}
+              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+              style={{
+                background: selectedBusiness?.id === b.id ? 'var(--accent)' : 'var(--card)',
+                border: `1px solid ${selectedBusiness?.id === b.id ? 'var(--accent)' : 'var(--border)'}`,
+                color: selectedBusiness?.id === b.id ? '#04141a' : 'var(--text-1)',
+              }}
+            >
+              {b.name}
+            </button>
+          ))}
+        </div>
+      )}
+ 
+      {/* Stat cards */}
+      <div className="grid grid-cols-4 gap-4">
+        {statCards.map((card, i) => (
+          <div
+            key={i}
+            className="rounded-2xl p-5 flex flex-col gap-3 transition-all"
+            style={{
+              background: 'var(--card)',
+              border: card.highlight
+                ? '1px solid rgba(201,150,44,0.3)'
+                : '1px solid var(--border)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-2)' }}>
+                {card.label}
+              </span>
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: card.iconBg, color: card.iconColor }}
+              >
+                {card.icon}
+              </div>
+            </div>
+            <div>
+              <p
+                className="text-2xl font-bold tracking-tight"
+                style={{
+                  color: card.highlight ? '#C9962C' : 'var(--text-0)',
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '-0.02em'
+                }}
+              >
+                ${fmtMono(
+                  i === 0 ? totalExpenses :
+                  i === 1 ? totalDeductible :
+                  i === 2 ? mileageDeduction :
+                  totalDeductions
+                )}
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-2)' }}>{card.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+ 
+      {/* Charts row */}
+      <div className="grid grid-cols-3 gap-4">
+ 
+        {/* Cash Flow — 2/3 width */}
+        <div
+          className="col-span-2 rounded-2xl p-5"
+          style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-sm" style={{ color: 'var(--text-0)' }}>
+              Expense Trend
+            </h3>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}>
+              Monthly
+            </span>
+          </div>
+          <div style={{ height: '220px' }}>
+            {expenses.length > 0
+              ? <Line data={cashFlowData} options={lineOptions} />
+              : <EmptyChart label="No expense data yet" />
+            }
           </div>
         </div>
-
-        {loading && (
-          <div className="text-center py-12 text-gray-400 text-sm">
-            Loading dashboard...
+ 
+        {/* Expenses by Category — 1/3 width */}
+        <div
+          className="rounded-2xl p-5"
+          style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+        >
+          <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-0)' }}>
+            By Category
+          </h3>
+          <div style={{ height: '140px' }}>
+            {hasCategoryData
+              ? <Doughnut data={categoryData} options={donutOptions} />
+              : <EmptyChart label="No categories yet" />
+            }
           </div>
-        )}
-
-        {!loading && data && (
-          <>
-            {/* ── Key numbers ── */}
-            <div className="grid grid-cols-2 gap-3">
-
-              {/* Total deductions — most important number */}
-              <div className="col-span-2 bg-[#0C2340] rounded-2xl p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-[#C9962C] text-xs font-semibold uppercase tracking-wide">
-                    Total Deductions YTD
-                  </p>
-                  <p className="text-4xl font-bold text-white mt-1">
-                    ${data.ytd.total_deductions.toFixed(2)}
-                  </p>
-                  <p className="text-white/50 text-xs mt-1">
-                    Expenses + mileage · {data.period.year_start} to today
-                  </p>
-                </div>
-                <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-[#C9962C] text-2xl font-bold flex-shrink-0">
-                  L
-                </div>
-              </div>
-
-              {/* This month */}
-              <StatCard
-                label={`${data.month.label}`}
-                value={`$${data.month.total_expenses.toFixed(2)}`}
-                sub="Spent this month"
-                icon="📅"
-              />
-
-              {/* Deductible expenses */}
-              <StatCard
-                label="Deductible Expenses"
-                value={`$${data.ytd.total_deductible.toFixed(2)}`}
-                sub={`${data.ytd.expense_count} transactions`}
-                icon="✓"
-                green
-              />
-
-              {/* Mileage */}
-              <StatCard
-                label="Business Mileage"
-                value={`${data.mileage.total_miles.toFixed(1)} mi`}
-                sub={`$${data.mileage.total_deduction.toFixed(2)} deduction · ${data.mileage.trip_count} trips`}
-                icon="🚗"
-              />
-
-              {/* Documents */}
-              <StatCard
-                label="Documents"
-                value={String(data.document_count)}
-                sub="Receipts & files uploaded"
-                icon="📄"
-              />
-
-            </div>
-
-            {/* ── Needs review alert ── */}
-            {data.ytd.needs_review_count > 0 && (
-              <button
-                onClick={() => onNavigate('expenses')}
-                className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3 text-left hover:bg-amber-100 transition-all"
-              >
-                <span className="text-amber-500 text-lg">⚠</span>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-amber-800">
-                    {data.ytd.needs_review_count} expense{data.ytd.needs_review_count !== 1 ? 's' : ''} need review
-                  </p>
-                  <p className="text-xs text-amber-600">
-                    Luca flagged these for your attention — tap to review
-                  </p>
-                </div>
-                <span className="text-amber-400">→</span>
-              </button>
-            )}
-
-            {/* ── Quick actions ── */}
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: 'Log Expense',  icon: '＋', tab: 'expenses',  desc: 'Add a transaction' },
-                { label: 'Log Mileage',  icon: '🚗', tab: 'mileage',   desc: 'Record a trip' },
-                { label: 'Ask Luca',     icon: 'L',  tab: 'chat',      desc: 'Tax question?' },
-              ].map(action => (
-                <button
-                  key={action.tab}
-                  onClick={() => onNavigate(action.tab)}
-                  className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col items-center gap-2 hover:border-[#C9962C] hover:shadow-sm transition-all text-center"
-                >
-                  <span className={`text-xl font-bold ${action.icon === 'L' ? 'text-[#C9962C]' : ''}`}>
-                    {action.icon}
+          {hasCategoryData && (
+            <div className="flex flex-col gap-1.5 mt-4">
+              {categoryData.labels.slice(0, 4).map((label, i) => (
+                <div key={i} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: CATEGORY_COLORS[i] }} />
+                    <span className="text-xs truncate" style={{ color: 'var(--text-1)', maxWidth: '90px' }}>{label}</span>
+                  </div>
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-0)' }}>
+                    ${categoryData.datasets[0].data[i]?.toFixed(0)}
                   </span>
-                  <span className="text-xs font-semibold text-[#0C2340]">{action.label}</span>
-                  <span className="text-xs text-gray-400">{action.desc}</span>
-                </button>
+                </div>
               ))}
             </div>
-
-            {/* ── Recent activity ── */}
-            {(data.recent_expenses.length > 0 || data.recent_mileage.length > 0) && (
-              <div className="flex flex-col gap-3">
-                <h3 className="font-semibold text-[#0C2340] text-sm">Recent Activity</h3>
-
-                {/* Recent expenses */}
-                {data.recent_expenses.map(exp => (
-                  <div key={`exp-${exp.id}`}
-                    className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#F5F4F0] flex items-center justify-center text-xs">
-                      🧾
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{exp.vendor}</p>
-                      <p className="text-xs text-gray-400">{exp.date} · {exp.category}</p>
-                    </div>
-                    <div className="flex flex-col items-end flex-shrink-0">
-                      <span className="text-sm font-bold text-[#0C2340]">
-                        ${exp.amount.toFixed(2)}
-                      </span>
-                      {exp.needs_review ? (
-                        <span className="text-xs text-amber-500">⚠ review</span>
-                      ) : exp.deductible ? (
-                        <span className="text-xs text-emerald-500">deductible</span>
-                      ) : (
-                        <span className="text-xs text-gray-400">personal</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {/* Recent mileage */}
-                {data.recent_mileage.map(trip => (
-                  <div key={`mil-${trip.id}`}
-                    className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#F5F4F0] flex items-center justify-center text-xs">
-                      🚗
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{trip.purpose}</p>
-                      <p className="text-xs text-gray-400">{trip.date} · {trip.miles} miles</p>
-                    </div>
-                    <div className="flex flex-col items-end flex-shrink-0">
-                      {trip.deduction_amount ? (
-                        <span className="text-sm font-bold text-emerald-600">
-                          ${trip.deduction_amount.toFixed(2)}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">personal</span>
-                      )}
-                      <span className="text-xs text-gray-400 capitalize">{trip.trip_type}</span>
-                    </div>
-                  </div>
-                ))}
-
-                <button
-                  onClick={() => onNavigate('expenses')}
-                  className="text-xs text-[#C9962C] hover:text-[#B88A24] font-medium text-center py-1 transition-all"
-                >
-                  View all expenses →
-                </button>
-              </div>
-            )}
-
-            {/* ── Download report shortcut ── */}
-            <button
-              onClick={() => onNavigate('reports')}
-              className="w-full bg-white border border-gray-200 hover:border-[#0C2340] rounded-xl py-3 text-sm font-medium text-[#0C2340] transition-all flex items-center justify-center gap-2"
-            >
-              <span>📊</span>
-              View Full Report & Download PDF
-            </button>
-
-          </>
-        )}
-
+          )}
+        </div>
       </div>
+ 
+      {/* Recent Transactions */}
+      <div
+        className="rounded-2xl"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+      >
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border-soft)' }}>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--text-0)' }}>
+            Recent Transactions
+          </h3>
+          <button
+            onClick={() => onNavigate('expenses')}
+            className="text-xs font-semibold transition-all"
+            style={{ color: 'var(--accent)' }}
+          >
+            View all →
+          </button>
+        </div>
+ 
+        {recentExpenses.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-10">
+            <span className="text-3xl">🧾</span>
+            <p className="text-sm" style={{ color: 'var(--text-2)' }}>No transactions yet</p>
+            <button
+              onClick={() => onNavigate('expenses')}
+              className="text-xs font-semibold mt-1"
+              style={{ color: 'var(--accent)' }}
+            >
+              Log your first expense →
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y" style={{ '--tw-divide-opacity': 1 }}>
+            {recentExpenses.map((e, i) => (
+              <div
+                key={e.id || i}
+                className="flex items-center gap-4 px-5 py-3.5 transition-all"
+                style={{ borderColor: 'var(--border-soft)' }}
+                onMouseEnter={el => el.currentTarget.style.background = 'var(--hover)'}
+                onMouseLeave={el => el.currentTarget.style.background = 'transparent'}
+              >
+                {/* Category dot */}
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold"
+                  style={{
+                    background: `${CATEGORY_COLORS[i % CATEGORY_COLORS.length]}18`,
+                    color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+                    fontFamily: 'var(--font-display)'
+                  }}
+                >
+                  {(e.vendor || 'E')[0].toUpperCase()}
+                </div>
+ 
+                {/* Vendor + category */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-0)' }}>
+                    {e.vendor || 'Unknown Vendor'}
+                  </p>
+                  <p className="text-xs truncate" style={{ color: 'var(--text-2)' }}>
+                    {e.date} · {e.category || 'Uncategorized'}
+                  </p>
+                </div>
+ 
+                {/* Amount */}
+                <p
+                  className="text-sm font-bold flex-shrink-0"
+                  style={{ color: '#FB7185', fontFamily: 'var(--font-display)' }}
+                >
+                  -{fmt(e.amount)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+ 
     </div>
   )
 }
-
-// ── Stat card component ────────────────────────────────────────────────────
-function StatCard({ label, value, sub, icon, green }) {
+ 
+function EmptyChart({ label }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-1">
-      <div className="flex items-center gap-2">
-        <span className="text-sm">{icon}</span>
-        <span className="text-xs font-medium text-gray-500">{label}</span>
-      </div>
-      <p className={`text-xl font-bold mt-0.5 ${green ? 'text-emerald-600' : 'text-[#0C2340]'}`}>
-        {value}
-      </p>
-      <p className="text-xs text-gray-400">{sub}</p>
+    <div className="flex items-center justify-center h-full">
+      <p className="text-xs" style={{ color: 'var(--text-2)' }}>{label}</p>
     </div>
   )
 }

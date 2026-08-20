@@ -173,6 +173,23 @@ class LucaEngine:
                 "error": f"Unexpected error: {str(e)}"
             }
 
+
+    async def _unload_chat_model(self):
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                await client.post(self.api_url, json={'model': self.chat_model, 'prompt': '', 'keep_alive': 0})
+            logger.info(f'Chat model unloaded: {self.chat_model}')
+        except Exception as e:
+            logger.warning(f'Could not unload chat model: {e}')
+
+    async def _reload_chat_model(self):
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                await client.post(self.api_url, json={'model': self.chat_model, 'prompt': '', 'keep_alive': 300, 'stream': False})
+            logger.info(f'Chat model reloaded: {self.chat_model}')
+        except Exception as e:
+            logger.warning(f'Could not reload chat model: {e}')
+
     async def read_document(self, image_path: str, instruction: str = None) -> dict:
         """
         Send an image or document to Luca for vision processing.
@@ -201,6 +218,7 @@ class LucaEngine:
                 "Be precise with numbers and dates."
             )
 
+        await self._unload_chat_model()
         logger.info(f"Luca vision request — file: {image_path}")
 
         try:
@@ -273,6 +291,8 @@ class LucaEngine:
                 "response": "",
                 "error": f"Unexpected error: {str(e)}"
             }
+        finally:
+            await self._reload_chat_model()
 
     def _ollama_error_detail(self, response: httpx.Response, model: str) -> str:
         """Turn an Ollama HTTP error into a user-facing message."""

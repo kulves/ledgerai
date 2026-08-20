@@ -22,10 +22,12 @@ files:
   - "!node_modules"
 
 extraResources:
-  - from: "../backend"
-    to: "app/backend"
   - from: "../python-embed"
     to: "python"
+    filter:
+      - "**/*"
+  - from: "../backend"
+    to: "app/backend"
   - from: "../knowledge_base"
     to: "app/knowledge_base"
   - from: "../database"

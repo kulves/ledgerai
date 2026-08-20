@@ -1,97 +1,126 @@
 /**
- * ParticlesHeader.jsx — Animated Particles Header with Mouse Interaction
- * Vanilla canvas — no external library needed.
+* ParticlesHeader.jsx — Exact LedgerPro header with particles
+ * Matches the CSS spec exactly:
+ *   padding:26px, title left, spacer, theme-switch, online dot, avatar right
  */
-
 import { useEffect, useRef } from 'react'
 
-export default function ParticlesHeader({ activeTab, setActiveTab, backendStatus, tabs }) {
+const PAGE_TITLES = {
+  dashboard:    'Dashboard',
+  expenses:     'Expenses',
+  mileage:      'Mileage',
+  documents:    'Documents',
+  reports:      'Reports',
+  chat:         'Ask Luca',
+  subscription: 'Subscription',
+  settings:     'Settings',
+  banks:        'Connected Banks',
+}
+const PAGE_SUBS = {
+  dashboard:    "Here's what's happening with your books today.",
+  expenses:     'Track and categorize your business expenses.',
+  mileage:      'Log business trips and calculate IRS deductions.',
+  documents:    'Uploaded receipts and financial documents.',
+  reports:      'Generate financial summaries and PDF reports.',
+  chat:         'Ask Luca anything about tax and bookkeeping.',
+  subscription: 'Manage your Ledger AI subscription.',
+  settings:     'Configure Luca and manage your data.',
+  banks:        'Connect your bank accounts for automatic import.',
+}
+
+const SunIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+)
+const MoonIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+  </svg>
+)
+const MonitorIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+  </svg>
+)
+
+export default function ParticlesHeader({ backendStatus, activeTab, theme, setTheme }) {
   const canvasRef = useRef(null)
-  const animRef = useRef(null)
-  const particlesRef = useRef([])
-  const mouseRef = useRef({ x: null, y: null })
+  const animRef   = useRef(null)
+  const ptsRef    = useRef([])
+  const mouseRef  = useRef({ x: null, y: null })
+
+  const title = PAGE_TITLES[activeTab] || 'Dashboard'
+  const sub   = PAGE_SUBS[activeTab]   || ''
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
+    const COLORS = ['#22D3EE','#A78BFA','#C9962C','rgba(255,255,255,0.5)']
 
-    const COLORS = ['#0EA5C9', '#38BDF8', '#C9962C', '#7DD3FC', 'rgba(255,255,255,0.8)']
-    const LINK_DIST = 130
-    const MOUSE_DIST = 100
-
-    const makeParticle = (x, y) => ({
-      x: x ?? Math.random() * canvas.width,
-      y: y ?? Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.6,
-      vy: (Math.random() - 0.5) * 0.6,
-      r: Math.random() * 1.8 + 0.6,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      opacity: Math.random() * 0.5 + 0.3,
+    const mkP = (x, y) => ({
+      x:  x ?? Math.random() * canvas.width,
+      y:  y ?? Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.55,
+      vy: (Math.random() - 0.5) * 0.55,
+      r:  Math.random() * 1.6 + 0.5,
+      col: COLORS[Math.floor(Math.random() * COLORS.length)],
+      op: Math.random() * 0.45 + 0.2,
     })
 
-    const initParticles = () => {
-      const count = Math.max(45, Math.floor((canvas.width * canvas.height) / 14000))
-      particlesRef.current = Array.from({ length: count }, () => makeParticle())
-    }
-
-    const setSize = () => {
-      canvas.width = canvas.parentElement.offsetWidth
+    const init = () => {
+      canvas.width  = canvas.parentElement.offsetWidth
       canvas.height = canvas.parentElement.offsetHeight
+      ptsRef.current = Array.from(
+        { length: Math.max(38, Math.floor(canvas.width * canvas.height / 15000)) },
+        () => mkP()
+      )
     }
-
-    setSize()
-    initParticles()
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      const pts = particlesRef.current
-      const mouse = mouseRef.current
+      const pts = ptsRef.current
+      const m   = mouseRef.current
 
-      // Move particles + mouse attraction
+      // Move + mouse attract
       pts.forEach(p => {
-        if (mouse.x !== null) {
-          const dx = mouse.x - p.x
-          const dy = mouse.y - p.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < MOUSE_DIST && dist > 0) {
-            const force = (MOUSE_DIST - dist) / MOUSE_DIST * 0.05
-            p.vx += dx * force * 0.1
-            p.vy += dy * force * 0.1
+        if (m.x !== null) {
+          const dx = m.x - p.x, dy = m.y - p.y
+          const d  = Math.sqrt(dx*dx + dy*dy)
+          if (d < 95 && d > 0) {
+            p.vx += dx * 0.003; p.vy += dy * 0.003
+            const spd = Math.sqrt(p.vx*p.vx + p.vy*p.vy)
+            if (spd > 2.2) { p.vx = p.vx/spd*2.2; p.vy = p.vy/spd*2.2 }
           }
         }
-
-        // Speed cap + friction
-        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
-        if (speed > 2.5) { p.vx = (p.vx / speed) * 2.5; p.vy = (p.vy / speed) * 2.5 }
-        p.vx *= 0.99
-        p.vy *= 0.99
-
-        p.x += p.vx
-        p.y += p.vy
-
-        // Wrap edges
-        if (p.x < -5) p.x = canvas.width + 5
-        if (p.x > canvas.width + 5) p.x = -5
-        if (p.y < -5) p.y = canvas.height + 5
-        if (p.y > canvas.height + 5) p.y = -5
+        p.vx *= 0.99; p.vy *= 0.99
+        p.x  += p.vx;  p.y  += p.vy
+        if (p.x < -5) p.x = canvas.width+5
+        if (p.x > canvas.width+5) p.x = -5
+        if (p.y < -5) p.y = canvas.height+5
+        if (p.y > canvas.height+5) p.y = -5
       })
 
-      // Draw links
+      // Lines
       for (let i = 0; i < pts.length; i++) {
-        for (let j = i + 1; j < pts.length; j++) {
-          const dx = pts[i].x - pts[j].x
-          const dy = pts[i].y - pts[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < LINK_DIST) {
-            const nearMouse = mouse.x !== null && (
-              Math.sqrt((pts[i].x - mouse.x) ** 2 + (pts[i].y - mouse.y) ** 2) < MOUSE_DIST ||
-              Math.sqrt((pts[j].x - mouse.x) ** 2 + (pts[j].y - mouse.y) ** 2) < MOUSE_DIST
+        for (let j = i+1; j < pts.length; j++) {
+          const dx = pts[i].x-pts[j].x, dy = pts[i].y-pts[j].y
+          const d  = Math.sqrt(dx*dx + dy*dy)
+          if (d < 120) {
+            const near = m.x !== null && (
+              Math.hypot(pts[i].x-m.x, pts[i].y-m.y) < 95 ||
+              Math.hypot(pts[j].x-m.x, pts[j].y-m.y) < 95
             )
-            const alpha = (1 - dist / LINK_DIST) * (nearMouse ? 0.8 : 0.2)
             ctx.beginPath()
-            ctx.strokeStyle = nearMouse ? `rgba(201,150,44,${alpha})` : `rgba(14,165,201,${alpha})`
-            ctx.lineWidth = nearMouse ? 1.2 : 0.7
+            ctx.strokeStyle = near
+              ? `rgba(201,150,44,${0.75*(1-d/120)})`
+              : `rgba(34,211,238,${0.2*(1-d/120)})`
+            ctx.lineWidth = near ? 1.1 : 0.75
             ctx.moveTo(pts[i].x, pts[i].y)
             ctx.lineTo(pts[j].x, pts[j].y)
             ctx.stroke()
@@ -99,159 +128,144 @@ export default function ParticlesHeader({ activeTab, setActiveTab, backendStatus
         }
       }
 
-      // Draw particles
+      // Dots
       pts.forEach(p => {
-        const nearMouse = mouse.x !== null &&
-          Math.sqrt((p.x - mouse.x) ** 2 + (p.y - mouse.y) ** 2) < MOUSE_DIST
-
-        if (nearMouse) {
+        const near = m.x !== null && Math.hypot(p.x-m.x, p.y-m.y) < 95
+        if (near) {
           ctx.beginPath()
-          ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2)
-          ctx.fillStyle = 'rgba(201,150,44,0.1)'
+          ctx.arc(p.x, p.y, p.r*4, 0, Math.PI*2)
+          ctx.fillStyle = 'rgba(201,150,44,0.09)'
           ctx.fill()
         }
-
         ctx.beginPath()
-        ctx.arc(p.x, p.y, nearMouse ? p.r * 2 : p.r, 0, Math.PI * 2)
-        ctx.fillStyle = nearMouse ? '#C9962C' : p.color
-        ctx.globalAlpha = nearMouse ? 1 : p.opacity
+        ctx.arc(p.x, p.y, near ? p.r*2.1 : p.r, 0, Math.PI*2)
+        ctx.fillStyle = near ? '#C9962C' : p.col
+        ctx.globalAlpha = near ? 0.95 : p.op
         ctx.fill()
         ctx.globalAlpha = 1
       })
 
       // Cursor glow
-      if (mouse.x !== null) {
-        const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, MOUSE_DIST)
-        grad.addColorStop(0, 'rgba(14,165,201,0.1)')
-        grad.addColorStop(1, 'rgba(14,165,201,0)')
-        ctx.beginPath()
-        ctx.arc(mouse.x, mouse.y, MOUSE_DIST, 0, Math.PI * 2)
-        ctx.fillStyle = grad
-        ctx.fill()
+      if (m.x !== null) {
+        const g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, 95)
+        g.addColorStop(0, 'rgba(34,211,238,0.09)')
+        g.addColorStop(1, 'rgba(34,211,238,0)')
+        ctx.beginPath(); ctx.arc(m.x, m.y, 95, 0, Math.PI*2)
+        ctx.fillStyle = g; ctx.fill()
       }
 
       animRef.current = requestAnimationFrame(draw)
     }
 
-    // Mouse events on the parent header, not just canvas
-    const header = canvas.parentElement
-    const onMouseMove = (e) => {
-      const rect = canvas.getBoundingClientRect()
-      mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
-    }
-    const onMouseLeave = () => { mouseRef.current = { x: null, y: null } }
-    const onClick = (e) => {
-      const rect = canvas.getBoundingClientRect()
-      const cx = e.clientX - rect.left
-      const cy = e.clientY - rect.top
-      for (let i = 0; i < 8; i++) {
-        const p = makeParticle(cx, cy)
-        p.vx = (Math.random() - 0.5) * 4
-        p.vy = (Math.random() - 0.5) * 4
-        particlesRef.current.push(p)
+    const hdr = canvas.parentElement
+    const onMove  = e => { const r=canvas.getBoundingClientRect(); mouseRef.current={x:e.clientX-r.left,y:e.clientY-r.top} }
+    const onLeave = () => { mouseRef.current={x:null,y:null} }
+    const onClick = e => {
+      const r=canvas.getBoundingClientRect()
+      for (let i=0;i<7;i++){
+        const p=mkP(e.clientX-r.left, e.clientY-r.top)
+        p.vx=(Math.random()-0.5)*3.8; p.vy=(Math.random()-0.5)*3.8
+        ptsRef.current.push(p)
       }
-      if (particlesRef.current.length > 120) {
-        particlesRef.current = particlesRef.current.slice(-90)
-      }
+      if (ptsRef.current.length>120) ptsRef.current=ptsRef.current.slice(-90)
     }
 
-    header.addEventListener('mousemove', onMouseMove)
-    header.addEventListener('mouseleave', onMouseLeave)
-    header.addEventListener('click', onClick)
-
-    // Handle resize
-    const ro = new ResizeObserver(() => {
-      setSize()
-      initParticles()
-    })
-    ro.observe(header)
-
-    // Start animation
-    animRef.current = requestAnimationFrame(draw)
+    hdr.addEventListener('mousemove',onMove)
+    hdr.addEventListener('mouseleave',onLeave)
+    hdr.addEventListener('click',onClick)
+    const ro = new ResizeObserver(init)
+    ro.observe(hdr)
+    init(); draw()
 
     return () => {
       cancelAnimationFrame(animRef.current)
       ro.disconnect()
-      header.removeEventListener('mousemove', onMouseMove)
-      header.removeEventListener('mouseleave', onMouseLeave)
-      header.removeEventListener('click', onClick)
+      hdr.removeEventListener('mousemove',onMove)
+      hdr.removeEventListener('mouseleave',onLeave)
+      hdr.removeEventListener('click',onClick)
     }
   }, [])
 
   return (
     <header
-      className="relative overflow-hidden flex-shrink-0"
       style={{
-        background: 'linear-gradient(135deg, #060F1E 0%, #0A1628 45%, #0C2340 100%)',
-        minHeight: '68px',
-        boxShadow: '0 2px 20px rgba(0,0,0,0.4)'
+        position:'relative', overflow:'hidden',
+        background:'var(--topbar-bg)',
+        borderBottom:'1px solid var(--border-soft)',
+        padding:'26px 26px',
+        display:'flex', alignItems:'center', gap:'16px',
+        flexShrink: 0,
       }}
     >
+      {/* Canvas */}
       <canvas
         ref={canvasRef}
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' }}
+        style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:0 }}
       />
 
-      <div className="relative z-10 flex items-center justify-between px-6 py-3 gap-4">
+      {/* Inner — z-index:1 above canvas */}
+      <div style={{ position:'relative', zIndex:1, display:'flex', alignItems:'center', gap:'16px', width:'100%' }}>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div
-            className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
-            style={{
-              background: 'rgba(14,165,201,0.15)',
-              border: '1px solid rgba(14,165,201,0.3)',
-              boxShadow: '0 0 12px rgba(14,165,201,0.2)'
-            }}
-          >
-            <img
-              src="/luca_logo.png"
-              alt="Luca"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none'
-                e.target.parentNode.innerHTML =
-                  '<span style="color:#C9962C;font-weight:bold;font-size:18px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">L</span>'
-              }}
-            />
-          </div>
-          <div>
-            <h1 className="text-white font-bold text-lg leading-tight tracking-wide"
-              style={{ textShadow: '0 0 20px rgba(14,165,201,0.3)' }}>
-              Luca
-            </h1>
-            <p className="text-xs font-medium leading-tight" style={{ color: '#0EA5C9' }}>
-              by Ledger AI
+        {/* Title block */}
+        <div>
+          <p style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:'22px', color:'var(--text-0)', margin:0, letterSpacing:'-0.01em' }}>
+            {title}
+          </p>
+          {sub && (
+            <p style={{ fontSize:'12px', color:'var(--text-2)', marginTop:'3px' }}>
+              {sub}
             </p>
-          </div>
+          )}
         </div>
 
-        <nav className="flex items-center gap-1 flex-wrap justify-center flex-1">
-          {tabs.map(tab => (
+        {/* Spacer */}
+        <div style={{ flex:1 }} />
+
+        {/* Theme switch */}
+        <div style={{
+          display:'flex', alignItems:'center', gap:'2px',
+          background:'var(--card-2)', border:'1px solid var(--border)',
+          borderRadius:'10px', padding:'3px',
+        }}>
+          {[
+            { value:'light',  Icon: SunIcon },
+            { value:'dark',   Icon: MoonIcon },
+            { value:'system', Icon: MonitorIcon },
+          ].map(({ value, Icon }) => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
-              style={activeTab === tab.id
-                ? { background: 'rgba(14,165,201,0.25)', color: '#38BDF8', border: '1px solid rgba(14,165,201,0.4)', boxShadow: '0 0 10px rgba(14,165,201,0.15)' }
-                : { background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid transparent' }
-              }
-              onMouseEnter={e => { if (activeTab !== tab.id) { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)' } }}
-              onMouseLeave={e => { if (activeTab !== tab.id) { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent' } }}
+              key={value}
+              onClick={() => setTheme(value)}
+              title={value}
+              style={{
+                display:'flex', alignItems:'center', justifyContent:'center',
+                width:'30px', height:'28px', borderRadius:'7px',
+                border:'none', cursor:'pointer',
+                background: theme===value ? 'var(--hover)' : 'transparent',
+                color:       theme===value ? '#22D3EE'     : 'var(--text-2)',
+                transition: 'color 0.15s, background 0.15s',
+              }}
+              onMouseEnter={e => { if (theme!==value) e.currentTarget.style.color='var(--text-0)' }}
+              onMouseLeave={e => { if (theme!==value) e.currentTarget.style.color='var(--text-2)' }}
             >
-              {tab.label}
+              <Icon />
             </button>
           ))}
-        </nav>
+        </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{
-              background: backendStatus === 'connected' ? '#34D399' : '#F87171',
-              boxShadow: backendStatus === 'connected' ? '0 0 8px rgba(52,211,153,0.7)' : '0 0 8px rgba(248,113,113,0.7)'
-            }} />
-          <span className="text-xs font-medium hidden sm:block"
-            style={{ color: backendStatus === 'connected' ? '#34D399' : '#F87171' }}>
-            {backendStatus === 'connected' ? 'Connected' : 'Disconnected'}
+        {/* Online dot */}
+        <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+          <span style={{
+            width:'8px', height:'8px', borderRadius:'50%',
+            background: backendStatus==='connected' ? '#34D399' : '#FB7185',
+            boxShadow:  backendStatus==='connected'
+              ? '0 0 7px rgba(52,211,153,0.85)'
+              : '0 0 7px rgba(251,113,133,0.85)',
+          }} />
+          <span style={{
+            fontSize:'12px', fontWeight:600,
+            color: backendStatus==='connected' ? '#34D399' : '#FB7185',
+          }}>
+            {backendStatus==='connected' ? 'Online' : 'Offline'}
           </span>
         </div>
 
