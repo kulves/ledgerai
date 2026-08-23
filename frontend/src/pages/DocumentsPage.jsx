@@ -14,175 +14,248 @@
  * linked to their associated expenses.
  * Receipt uploading has moved to the Expenses tab.
  */
-
+/**
+ * DocumentsPage.jsx — Receipt Archive (Dark theme redesign)
+ * Read-only archive of uploaded receipts linked to expenses.
+ * Receipt uploading lives in the Expenses tab.
+ */
 import { useState, useEffect } from 'react'
 import { api } from '../services/api'
- 
-export default function DocumentsPage({ backendStatus, selectedBusiness }) {
-  const [businesses, setBusinesses] = useState([])
-  const [activeBusiness, setActiveBusiness] = useState(null)
+
+const CONFIDENCE_STYLE = {
+  high:   { bg: 'rgba(52,211,153,0.1)',  color: '#34D399', label: 'High' },
+  medium: { bg: 'rgba(34,211,238,0.1)',  color: '#22D3EE', label: 'Medium' },
+  low:    { bg: 'rgba(251,187,36,0.1)',  color: '#FBBF24', label: 'Low' },
+}
+
+const formatDate = d => {
+  if (!d) return '—'
+  try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }
+  catch { return d }
+}
+
+const fmt = n => n ? `$${Number(n).toFixed(2)}` : '—'
+
+export default function DocumentsPage({ backendStatus, selectedBusiness: propBusiness, onSelectBusiness, businesses: propBusinesses }) {
+  const [businesses, setBusinesses] = useState(propBusinesses || [])
+  const [activeBusiness, setActiveBusiness] = useState(propBusiness || null)
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(false)
- 
-  useEffect(() => { loadBusinesses() }, [])
- 
+  const [search, setSearch] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
+
   useEffect(() => {
-    if (selectedBusiness) setActiveBusiness(selectedBusiness)
-  }, [selectedBusiness])
- 
-  useEffect(() => {
-    if (activeBusiness) loadDocuments()
-  }, [activeBusiness])
- 
-  const loadBusinesses = async () => {
-    const data = await api.getBusinesses()
-    if (data?.length) {
-      setBusinesses(data)
-      if (!activeBusiness) setActiveBusiness(selectedBusiness || data[0])
+    if (!propBusinesses?.length) {
+      api.getBusinesses().then(d => {
+        if (d?.length) { setBusinesses(d); if (!activeBusiness) setActiveBusiness(d[0]) }
+      })
     }
-  }
- 
+  }, [])
+
+  useEffect(() => { if (propBusiness) setActiveBusiness(propBusiness) }, [propBusiness])
+  useEffect(() => { if (activeBusiness) loadDocuments() }, [activeBusiness])
+
   const loadDocuments = async () => {
-    if (!activeBusiness) return
     setLoading(true)
     const data = await api.getDocuments(activeBusiness.id)
     setDocuments(data || [])
     setLoading(false)
   }
- 
-  const handleDelete = async (docId) => {
-    if (!window.confirm('Delete this document? This cannot be undone.')) return
-    await fetch(`http://127.0.0.1:8000/api/documents/${docId}`, { method: 'DELETE' })
+
+  const handleDelete = async id => {
+    await fetch(`http://127.0.0.1:8000/api/documents/${id}`, { method: 'DELETE' })
+    setConfirmDelete(null)
     loadDocuments()
   }
- 
-  const confidenceBadge = (conf) => {
-    const map = {
-      high:   'bg-emerald-100 text-emerald-700',
-      medium: 'bg-blue-100 text-blue-700',
-      low:    'bg-amber-100 text-amber-700',
-    }
-    return map[conf] || map.low
-  }
- 
+
+  const filtered = documents.filter(doc => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    const ext = doc.extracted_data || {}
+    return (
+      doc.filename?.toLowerCase().includes(q) ||
+      ext.vendor?.toLowerCase().includes(q) ||
+      doc.doc_type?.toLowerCase().includes(q)
+    )
+  })
+
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="max-w-3xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
- 
-        {/* Business selector */}
+    <div className="flex flex-col gap-6 p-6" style={{ minHeight: '100%' }}>
+
+      {/* Business selector */}
+      {businesses.length > 1 && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-gray-500">Business:</span>
+          <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>Business:</span>
           {businesses.map(b => (
-            <button
-              key={b.id}
-              onClick={() => setActiveBusiness(b)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                activeBusiness?.id === b.id
-                  ? 'bg-[#0C2340] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
+            <button key={b.id} onClick={() => { setActiveBusiness(b); onSelectBusiness?.(b) }}
+              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+              style={{
+                background: activeBusiness?.id === b.id ? 'var(--accent)' : 'var(--card)',
+                border: `1px solid ${activeBusiness?.id === b.id ? 'var(--accent)' : 'var(--border)'}`,
+                color: activeBusiness?.id === b.id ? '#04141a' : 'var(--text-1)',
+              }}>
               {b.name}
             </button>
           ))}
         </div>
- 
-        {/* Info banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
-          📎 To upload a new receipt, go to the <strong>Expenses</strong> tab and drop it on the receipt zone — Luca will extract and log it automatically.
-        </div>
- 
-        {/* Document list */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-[#0C2340]">
-              Uploaded Documents
-              {documents.length > 0 && (
-                <span className="ml-2 text-sm font-normal text-gray-400">{documents.length}</span>
-              )}
-            </h2>
-          </div>
- 
-          {loading && (
-            <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-4 border-[#C9962C] border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
- 
-          {!loading && documents.length === 0 && (
-            <div className="text-center py-12 text-gray-400">
-              <div className="text-4xl mb-3">📄</div>
-              <p className="font-medium">No documents uploaded yet</p>
-              <p className="text-sm mt-1">Drop a receipt on the Expenses tab to get started</p>
-            </div>
-          )}
- 
-          <div className="flex flex-col gap-3">
-            {documents.map(doc => {
-              const ext = doc.extracted_data || {}
-              return (
-                <div key={doc.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex items-start gap-4">
-                  {/* Icon */}
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 text-xl">
-                    {doc.filename?.endsWith('.pdf') ? '📄' : '🖼️'}
-                  </div>
- 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-sm text-gray-800 truncate">{doc.filename}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {doc.doc_type?.toUpperCase()} · {doc.created_at?.slice(0,10)}
-                        </p>
-                      </div>
-                      {ext.confidence && (
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${confidenceBadge(ext.confidence)}`}>
-                          {ext.confidence}
-                        </span>
-                      )}
-                    </div>
- 
-                    {/* Extracted data */}
-                    {(ext.vendor || ext.amount || ext.date) && (
-                      <div className="grid grid-cols-3 gap-3 mt-3">
-                        {ext.vendor && (
-                          <div>
-                            <p className="text-xs text-gray-400">Vendor</p>
-                            <p className="text-sm font-medium text-gray-700 truncate">{ext.vendor}</p>
-                          </div>
-                        )}
-                        {ext.amount && (
-                          <div>
-                            <p className="text-xs text-gray-400">Amount</p>
-                            <p className="text-sm font-medium text-gray-700">${ext.amount}</p>
-                          </div>
-                        )}
-                        {ext.date && (
-                          <div>
-                            <p className="text-xs text-gray-400">Date</p>
-                            <p className="text-sm font-medium text-gray-700">{ext.date}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
- 
-                  {/* Delete button */}
-                  <button
-                    onClick={() => handleDelete(doc.id)}
-                    className="text-gray-300 hover:text-red-400 transition-colors flex-shrink-0 text-lg leading-none"
-                    title="Delete document"
-                  >
-                    ×
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
- 
+      )}
+
+      {/* Info banner */}
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm"
+        style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.15)', color: 'var(--text-1)' }}>
+        <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--accent)' }}
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        To upload a new receipt, go to <strong className="mx-1" style={{ color: 'var(--accent)' }}>Expenses</strong>
+        and drop it on the receipt zone — Luca will extract and log it automatically.
       </div>
+
+      {/* Search + count */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 relative">
+          <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-2)' }}
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Search documents..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-xl text-sm outline-none"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }}
+          />
+        </div>
+        <span className="text-sm flex-shrink-0" style={{ color: 'var(--text-2)' }}>
+          {filtered.length} document{filtered.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+
+      {/* Documents table */}
+      <div className="rounded-2xl overflow-hidden"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+
+        {/* Header */}
+        <div className="grid px-5 py-3 text-xs font-semibold"
+          style={{
+            gridTemplateColumns: '40px 1fr 120px 100px 100px 120px 40px',
+            borderBottom: '1px solid var(--border-soft)',
+            color: 'var(--text-2)',
+          }}>
+          <span />
+          <span>File</span>
+          <span>Vendor</span>
+          <span>Amount</span>
+          <span>Date</span>
+          <span>Confidence</span>
+          <span />
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin"
+              style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+          </div>
+        )}
+
+        {/* Empty */}
+        {!loading && filtered.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-12">
+            <span className="text-3xl">📄</span>
+            <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+              {search ? 'No documents match your search' : 'No documents uploaded yet'}
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+              Drop a receipt on the Expenses tab to get started
+            </p>
+          </div>
+        )}
+
+        {/* Rows */}
+        {filtered.map((doc, i) => {
+          const ext = doc.extracted_data || {}
+          const conf = CONFIDENCE_STYLE[ext.confidence] || CONFIDENCE_STYLE.low
+          const isPdf = doc.filename?.toLowerCase().endsWith('.pdf')
+
+          return (
+            <div key={doc.id}
+              className="grid items-center px-5 py-3.5 transition-all"
+              style={{
+                gridTemplateColumns: '40px 1fr 120px 100px 100px 120px 40px',
+                borderTop: i > 0 ? '1px solid var(--border-soft)' : 'none',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {/* File icon */}
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                style={{ background: 'var(--card-2)', border: '1px solid var(--border)' }}>
+                {isPdf ? '📄' : '🖼️'}
+              </div>
+
+              {/* Filename + date uploaded */}
+              <div className="min-w-0 pr-4">
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-0)' }}>
+                  {doc.filename}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
+                  {doc.doc_type?.toUpperCase()} · {formatDate(doc.created_at)}
+                </p>
+              </div>
+
+              {/* Vendor */}
+              <span className="text-sm truncate" style={{ color: ext.vendor ? 'var(--text-0)' : 'var(--text-2)' }}>
+                {ext.vendor || '—'}
+              </span>
+
+              {/* Amount */}
+              <span className="text-sm font-semibold"
+                style={{ color: ext.amount ? '#34D399' : 'var(--text-2)' }}>
+                {fmt(ext.amount)}
+              </span>
+
+              {/* Date */}
+              <span className="text-sm" style={{ color: 'var(--text-2)' }}>
+                {ext.date || '—'}
+              </span>
+
+              {/* Confidence badge */}
+              <span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                  style={{ background: conf.bg, color: conf.color }}>
+                  {conf.label}
+                </span>
+              </span>
+
+              {/* Delete */}
+              <div className="flex justify-end">
+                {confirmDelete === doc.id ? (
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleDelete(doc.id)}
+                      className="text-xs font-semibold" style={{ color: 'var(--red)' }}>Del</button>
+                    <span style={{ color: 'var(--border)', fontSize: '10px' }}>|</span>
+                    <button onClick={() => setConfirmDelete(null)}
+                      className="text-xs" style={{ color: 'var(--text-2)' }}>×</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setConfirmDelete(doc.id)}
+                    className="text-base leading-none opacity-20 hover:opacity-80 transition-all"
+                    style={{ color: 'var(--red)' }}>×</button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Footer */}
+        {filtered.length > 0 && (
+          <div className="px-5 py-3 text-xs"
+            style={{ borderTop: '1px solid var(--border-soft)', background: 'var(--card-2)', color: 'var(--text-2)' }}>
+            {documents.filter(d => (d.extracted_data?.confidence === 'high')).length} high confidence
+            · {documents.filter(d => !d.extracted_data?.amount).length} missing amount
+          </div>
+        )}
+      </div>
+
     </div>
   )
 }

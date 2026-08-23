@@ -12,14 +12,37 @@
  *   - Markdown bold (**text**) is rendered properly
  */
 
-import { useState, useEffect, useRef } from 'react'
+/**
+ * ChatPage.jsx — Perplexity-style Luca Chat
+ * ============================================
+ * Dark centered layout with:
+ *   - Welcome screen with suggested prompts when no messages
+ *   - "Ask Luca anything" input bar at bottom
+ *   - Messages rendered above the input
+ *   - Source citations and CPA disclaimer styled cleanly
+ *   - Conversation history sent with every message
+ */
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { api } from '../services/api'
 
-// ── Message factory helpers ───────────────────────────────────────────────────
-function createUserMessage(text) {
+const SUGGESTIONS = [
+  { icon: '🏠', text: 'How do I deduct my home office?' },
+  { icon: '🚗', text: 'What is the mileage rate for 2026?' },
+  { icon: '💼', text: 'What\'s the difference between a sole proprietor and LLC?' },
+  { icon: '📊', text: 'How does a SEP-IRA work for self-employed?' },
+  { icon: '🧾', text: 'Are business meals 100% deductible?' },
+  { icon: '📅', text: 'When are quarterly estimated taxes due?' },
+]
+
+const INITIAL_GREETING = {
+  id: 0, role: 'luca', answered: true, isGreeting: true,
+  text: "Hi! I'm Luca, your local-first AI bookkeeping and tax assistant. I can answer questions about tax concepts, deductions, and bookkeeping from my verified knowledge base. What would you like to know?"
+}
+
+function createUserMsg(text) {
   return { id: Date.now(), role: 'user', text }
 }
-function createLucaMessage(response) {
+function createLucaMsg(response) {
   return {
     id: Date.now() + 1, role: 'luca',
     text: response.answer, answered: response.answered,
@@ -27,68 +50,51 @@ function createLucaMessage(response) {
     confidenceNote: response.confidence_note,
   }
 }
-function createLoadingMessage() {
+function createLoadingMsg() {
   return { id: Date.now() + 1, role: 'luca', text: null, loading: true }
 }
 
-// The initial greeting shown in the UI — NOT sent as history to the backend
-const INITIAL_GREETING = {
-  id: 0, role: 'luca', answered: true, source: null, isGreeting: true,
-  text: "Hi! I'm Luca, your local-first AI bookkeeping and tax assistant. I can answer questions about tax concepts, deductions, and bookkeeping from my verified knowledge base. What would you like to know?"
-}
-
-// ── Main ChatPage component ───────────────────────────────────────────────────
-export default function ChatPage({ backendStatus }) {
+export default function ChatPage({ backendStatus, selectedBusiness }) {
   const [messages, setMessages] = useState([INITIAL_GREETING])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+  const hasMessages = messages.filter(m => !m.isGreeting).length > 0
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Get the business name from localStorage for context
+  useEffect(() => {
+    if (!isLoading) inputRef.current?.focus()
+  }, [isLoading])
+
   const getBusinessName = () => {
     try {
-      const onboarding = localStorage.getItem('luca_onboarding')
-      if (onboarding) {
-        const parsed = JSON.parse(onboarding)
-        return parsed.businessName || null
-      }
-    } catch {}
-    return null
+      return selectedBusiness?.name || null
+    } catch { return null }
   }
 
-  // Build history array from messages — exclude the initial greeting
-  // and loading states, only include real user/luca exchanges
-  const buildHistory = (currentMessages) => {
-    return currentMessages
+  const buildHistory = (currentMessages) =>
+    currentMessages
       .filter(m => !m.loading && !m.isGreeting && m.text)
       .map(m => ({ role: m.role, text: m.text }))
-  }
 
-  const handleSend = async () => {
-    const question = input.trim()
+  const handleSend = async (questionOverride) => {
+    const question = (questionOverride || input).trim()
     if (!question || isLoading) return
 
-    const userMsg = createUserMessage(question)
-    const loadingMsg = createLoadingMessage()
-
-    // Build history BEFORE adding the new user message
-    const historyBeforeThisMessage = buildHistory(messages)
+    const userMsg = createUserMsg(question)
+    const loadingMsg = createLoadingMsg()
+    const historyBeforeThis = buildHistory(messages)
 
     setMessages(prev => [...prev, userMsg, loadingMsg])
     setInput('')
     setIsLoading(true)
 
-    const response = await api.askLuca(
-      question,
-      historyBeforeThisMessage,
-      getBusinessName()
-    )
-
-    const lucaMsg = createLucaMessage(response)
+    const response = await api.askLuca(question, historyBeforeThis, getBusinessName())
+    const lucaMsg = createLucaMsg(response)
     setMessages(prev => [...prev.slice(0, -1), lucaMsg])
     setIsLoading(false)
   }
@@ -98,50 +104,173 @@ export default function ChatPage({ backendStatus }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="flex flex-col gap-4 max-w-2xl mx-auto">
-          {messages.map(msg => <ChatMessage key={msg.id} message={msg} />)}
-          <div ref={bottomRef} />
-        </div>
+    <div className="flex flex-col h-full" style={{ background: 'var(--bg)' }}>
+
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto">
+        {!hasMessages ? (
+          /* ── Welcome screen ── */
+          <div className="flex flex-col items-center justify-center min-h-full px-6 py-12">
+            <div className="w-full max-w-2xl flex flex-col items-center gap-8">
+
+              {/* Luca avatar + greeting */}
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div
+                  className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, #0C2340, #0E3A6B)',
+                    border: '1px solid rgba(34,211,238,0.3)',
+                    boxShadow: '0 0 24px rgba(34,211,238,0.15)',
+                  }}
+                >
+                  <img src="/luca_logo.png" alt="Luca" className="w-full h-full object-cover"
+                    onError={e => {
+                      e.target.style.display = 'none'
+                      e.target.parentNode.innerHTML = '<span style="color:#22D3EE;font-weight:700;font-size:24px;">L</span>'
+                    }}
+                  />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold" style={{ color: 'var(--text-0)', letterSpacing: '-0.02em' }}>
+                    What's on your mind today?
+                  </h2>
+                  <p className="text-sm mt-1.5" style={{ color: 'var(--text-2)' }}>
+                    Ask me anything about taxes, deductions, or bookkeeping.
+                  </p>
+                </div>
+              </div>
+
+              {/* Suggested prompts */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {SUGGESTIONS.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSend(s.text)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-sm"
+                    style={{
+                      background: 'var(--card)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-1)',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = 'rgba(34,211,238,0.4)'
+                      e.currentTarget.style.background = 'var(--hover)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                      e.currentTarget.style.background = 'var(--card)'
+                    }}
+                  >
+                    <span className="text-lg flex-shrink-0">{s.icon}</span>
+                    <span style={{ color: 'var(--text-0)' }}>{s.text}</span>
+                  </button>
+                ))}
+              </div>
+
+            </div>
+          </div>
+        ) : (
+          /* ── Message thread ── */
+          <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6">
+            {messages.filter(m => !m.isGreeting).map(msg => (
+              <ChatMessage key={msg.id} message={msg} />
+            ))}
+            <div ref={bottomRef} />
+          </div>
+        )}
       </div>
 
-      {/* Input */}
-      <div className="border-t border-gray-200 bg-white px-4 py-4">
-        <div className="max-w-2xl mx-auto flex gap-3">
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask Luca a tax or bookkeeping question..."
-            rows={2}
-            disabled={isLoading || backendStatus === 'disconnected'}
-            className="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9962C] focus:border-transparent disabled:opacity-50"
-          />
-          <button
-            onClick={handleSend}
-            disabled={isLoading || !input.trim() || backendStatus === 'disconnected'}
-            className="bg-[#C9962C] hover:bg-[#B88A24] disabled:opacity-40 text-white px-5 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 self-end"
+      {/* ── Input bar ── */}
+      <div
+        className="flex-shrink-0 px-4 pb-6 pt-3"
+        style={{ borderTop: hasMessages ? '1px solid var(--border-soft)' : 'none' }}
+      >
+        <div className="max-w-2xl mx-auto">
+          <div
+            className="flex items-end gap-3 px-4 py-3 rounded-2xl transition-all"
+            style={{
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+            }}
+            onFocus={e => e.currentTarget.style.borderColor = 'rgba(34,211,238,0.4)'}
+            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
-            {isLoading ? '...' : 'Ask'}
-          </button>
+            {/* Luca icon */}
+            <div
+              className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mb-0.5"
+              style={{ background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+            </div>
+
+            {/* Textarea */}
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask Luca a tax or bookkeeping question..."
+              rows={1}
+              disabled={isLoading || backendStatus === 'disconnected'}
+              className="flex-1 resize-none bg-transparent outline-none text-sm leading-relaxed"
+              style={{
+                color: 'var(--text-0)',
+                maxHeight: '120px',
+                minHeight: '24px',
+              }}
+              onInput={e => {
+                e.target.style.height = 'auto'
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+              }}
+            />
+
+            {/* Send button */}
+            <button
+              onClick={() => handleSend()}
+              disabled={isLoading || !input.trim() || backendStatus === 'disconnected'}
+              className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all mb-0.5"
+              style={{
+                background: isLoading || !input.trim() ? 'var(--border)' : '#22D3EE',
+                color: isLoading || !input.trim() ? 'var(--text-2)' : '#04141a',
+              }}
+            >
+              {isLoading ? (
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5">
+                  <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity="0.2"/>
+                  <path d="M21 12a9 9 0 00-9-9"/>
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              )}
+            </button>
+          </div>
+
+          <p className="text-center text-xs mt-2" style={{ color: 'var(--text-2)' }}>
+            Press Enter to send · Shift+Enter for new line · Luca only answers from verified IRS sources
+          </p>
         </div>
-        <p className="text-center text-xs text-gray-400 mt-2">
-          Press Enter to send · Shift+Enter for new line
-        </p>
       </div>
     </div>
   )
 }
 
-// ── Message rendering ─────────────────────────────────────────────────────────
+/* ── Message components ── */
 function ChatMessage({ message }) {
   if (message.loading) {
     return (
       <div className="flex gap-3 items-start">
-        <Avatar role="luca" />
-        <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3">
+        <LucaAvatar />
+        <div className="rounded-2xl px-4 py-3"
+          style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
           <LoadingDots />
         </div>
       </div>
@@ -150,94 +279,110 @@ function ChatMessage({ message }) {
 
   if (message.role === 'user') {
     return (
-      <div className="flex gap-3 items-start justify-end">
-        <div className="bg-[#0C2340] text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-sm text-sm">
+      <div className="flex justify-end">
+        <div
+          className="max-w-sm rounded-2xl rounded-tr-sm px-4 py-3 text-sm"
+          style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--text-0)' }}
+        >
           {message.text}
         </div>
-        <Avatar role="user" />
       </div>
     )
   }
 
+  /* Luca message */
+  const parts = (message.text || '').split('\n\n---\n')
+  const mainText = parts[0] || ''
+  const disclaimer = parts[1] || ''
+
   return (
     <div className="flex gap-3 items-start">
-      <Avatar role="luca" />
-      <div className="flex flex-col gap-2 max-w-lg">
-        <div className={`rounded-2xl rounded-tl-sm px-4 py-3 text-sm ${
-          message.answered
-            ? 'bg-white border border-gray-200 text-gray-800'
-            : 'bg-amber-50 border border-amber-200 text-amber-900'
-        }`}>
-          <MessageContent text={message.text} />
+      <LucaAvatar />
+      <div className="flex-1 min-w-0 flex flex-col gap-2">
+
+        {/* Answer */}
+        <div
+          className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed"
+          style={{
+            background: message.answered ? 'var(--card)' : 'rgba(251,187,36,0.06)',
+            border: `1px solid ${message.answered ? 'var(--border)' : 'rgba(251,187,36,0.2)'}`,
+            color: 'var(--text-0)',
+          }}
+        >
+          <BoldText text={mainText} />
         </div>
+
+        {/* Source citation */}
         {message.source && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 px-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-            <span>Source: {message.source}</span>
+          <div className="flex items-center gap-2 px-1">
+            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#34D399' }} />
+            <span className="text-xs" style={{ color: 'var(--text-2)' }}>
+              Source: {message.source}
+            </span>
           </div>
         )}
+
+        {/* Disclaimer */}
+        {disclaimer && (
+          <p className="text-xs italic px-1" style={{ color: 'var(--text-2)' }}>
+            {disclaimer}
+          </p>
+        )}
+
+        {/* No match note */}
         {!message.answered && message.confidenceNote && (
-          <p className="text-xs text-amber-700 px-1">{message.confidenceNote}</p>
+          <p className="text-xs px-1" style={{ color: 'var(--amber)' }}>
+            {message.confidenceNote}
+          </p>
         )}
       </div>
     </div>
   )
 }
 
-// Renders message text with basic markdown support (bold, italic, separator)
-function MessageContent({ text }) {
+function LucaAvatar() {
+  return (
+    <div
+      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg,#0C2340,#0E3A6B)',
+        border: '1px solid rgba(34,211,238,0.3)',
+        boxShadow: '0 0 8px rgba(34,211,238,0.1)',
+      }}
+    >
+      <img src="/luca_logo.png" alt="L" className="w-full h-full object-cover"
+        onError={e => {
+          e.target.style.display = 'none'
+          e.target.parentNode.innerHTML = '<span style="color:#22D3EE;font-weight:700;font-size:11px;">L</span>'
+        }}
+      />
+    </div>
+  )
+}
+
+function BoldText({ text }) {
   if (!text) return null
-
-  // Split on the hardcoded disclaimer separator
-  const parts = text.split('\n\n---\n')
-
   return (
     <>
-      {parts.map((part, i) => (
-        <div key={i} className={i > 0 ? 'mt-3 border-t border-gray-100 pt-3' : ''}>
-          {part.split('\n').map((line, j) => (
-            <p key={j} className={`${i > 0 ? 'text-xs text-gray-500 italic' : ''} ${j > 0 ? 'mt-1' : ''}`}>
-              <BoldText text={line} />
-            </p>
-          ))}
-        </div>
+      {text.split('\n').map((line, i) => (
+        <p key={i} className={i > 0 ? 'mt-2' : ''}>
+          {line.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
+            part.startsWith('**') && part.endsWith('**')
+              ? <strong key={j} style={{ color: 'var(--text-0)' }}>{part.slice(2,-2)}</strong>
+              : <span key={j}>{part}</span>
+          )}
+        </p>
       ))}
     </>
   )
 }
 
-// Renders **bold** markdown inline
-function BoldText({ text }) {
-  if (!text) return null
-  const parts = text.split(/(\*\*[^*]+\*\*)/g)
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.startsWith('**') && part.endsWith('**')
-          ? <strong key={i}>{part.slice(2, -2)}</strong>
-          : <span key={i}>{part}</span>
-      )}
-    </>
-  )
-}
-
-function Avatar({ role }) {
-  if (role === 'luca') {
-    return (
-      <div className="w-8 h-8 rounded-full bg-[#0C2340] flex items-center justify-center flex-shrink-0 text-[#C9962C] font-bold text-sm">L</div>
-    )
-  }
-  return (
-    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-gray-600 font-bold text-sm">U</div>
-  )
-}
-
 function LoadingDots() {
   return (
-    <div className="flex gap-1 items-center h-5">
-      {[0, 1, 2].map(i => (
-        <span key={i} className="w-2 h-2 rounded-full bg-[#C9962C] animate-bounce"
-          style={{ animationDelay: `${i * 0.15}s` }} />
+    <div className="flex gap-1 items-center" style={{ height: '20px' }}>
+      {[0,1,2].map(i => (
+        <span key={i} className="w-2 h-2 rounded-full animate-bounce"
+          style={{ background: '#22D3EE', animationDelay: `${i*0.15}s` }} />
       ))}
     </div>
   )

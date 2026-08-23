@@ -12,43 +12,72 @@
  *   - License key activation field
  *   - Stripe checkout trigger (when configured)
  */
-
+/**
+ * SubscriptionPage.jsx — Tier Status & Upgrade (Dark theme redesign)
+ */
 import { useState, useEffect } from 'react'
 import { api } from '../services/api'
 
-const TIER_FEATURES = {
-  free: [
-    '25 transactions/month',
-    '5 receipt OCR uploads/month',
-    '1 business',
-    'Full Luca AI assistant',
-    'Quarterly watermarked PDF reports',
-  ],
-  growth: [
-    'Unlimited transactions',
-    'Unlimited OCR uploads',
-    'Up to 2 businesses',
-    'Full Luca AI assistant',
-    'Clean, unwatermarked reports',
-    'Bank & brokerage connection (Phase 2)',
-  ],
-  professional: [
-    'Everything in Growth',
-    'Up to 5 businesses, multi-state',
-    'Depreciation scheduler',
-    'Quarterly tax worksheet',
-    'Accountant-share PDF',
-    'QBI deduction flagging',
-  ],
+const TIERS = {
+  free: {
+    name: 'Free', price: '$0', color: '#94A3B8',
+    features: [
+      '25 transactions/month',
+      '5 receipt OCR uploads/month',
+      '1 business',
+      'Full Luca AI assistant',
+      'Watermarked PDF reports',
+    ]
+  },
+  growth: {
+    name: 'Growth', price: '$19.99/mo', color: '#22D3EE',
+    features: [
+      'Unlimited transactions',
+      'Unlimited OCR uploads',
+      'Up to 2 businesses',
+      'Full Luca AI assistant',
+      'Clean unwatermarked reports',
+      'Bank connection (Phase 2)',
+    ]
+  },
+  professional: {
+    name: 'Professional', price: '$49.99/mo', color: '#C9962C',
+    features: [
+      'Everything in Growth',
+      'Up to 5 businesses, multi-state',
+      'Depreciation scheduler',
+      'Quarterly tax worksheet',
+      'Accountant-share PDF',
+      'QBI deduction flagging',
+    ]
+  },
+}
+
+function UsageBar({ label, used, limit, color }) {
+  const pct = limit ? Math.min((used / limit) * 100, 100) : 0
+  const near = pct >= 80
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex justify-between text-xs">
+        <span style={{ color: 'var(--text-1)' }}>{label}</span>
+        <span style={{ color: near ? '#FBBF24' : 'var(--text-2)' }}>
+          {used} / {limit === 999999 ? '∞' : limit}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+        <div className="h-full rounded-full transition-all"
+          style={{ width: `${pct}%`, background: near ? '#FBBF24' : color }} />
+      </div>
+    </div>
+  )
 }
 
 export default function SubscriptionPage({ backendStatus }) {
-  const [status, setStatus]         = useState(null)
-  const [loading, setLoading]       = useState(true)
+  const [status, setStatus]     = useState(null)
+  const [loading, setLoading]   = useState(true)
   const [licenseKey, setLicenseKey] = useState('')
   const [activating, setActivating] = useState(false)
-  const [message, setMessage]       = useState('')
-  const [messageType, setMessageType] = useState('success')
+  const [message, setMessage]   = useState({ text: '', type: 'success' })
   const [checkingOut, setCheckingOut] = useState(null)
 
   useEffect(() => { loadStatus() }, [])
@@ -60,10 +89,9 @@ export default function SubscriptionPage({ backendStatus }) {
     setLoading(false)
   }
 
-  const showMessage = (text, type = 'success') => {
-    setMessage(text)
-    setMessageType(type)
-    setTimeout(() => setMessage(''), 5000)
+  const showMsg = (text, type = 'success') => {
+    setMessage({ text, type })
+    setTimeout(() => setMessage({ text: '', type: 'success' }), 5000)
   }
 
   const handleActivate = async () => {
@@ -71,225 +99,193 @@ export default function SubscriptionPage({ backendStatus }) {
     setActivating(true)
     const result = await api.activateLicense(licenseKey.trim())
     setActivating(false)
-    if (result.success) {
-      showMessage(result.message, 'success')
+    if (result?.success) {
+      showMsg('License activated successfully!')
       setLicenseKey('')
       loadStatus()
     } else {
-      showMessage(result.message || 'Could not activate license key.', 'error')
+      showMsg(result?.message || 'Invalid license key.', 'error')
     }
   }
 
   const handleCheckout = async (tier) => {
     setCheckingOut(tier)
-    const result = await api.createCheckout(tier)
+    const result = await api.createCheckoutSession(tier)
     setCheckingOut(null)
-    if (result.success && result.checkout_url) {
-      window.open(result.checkout_url, '_blank')
-    } else {
-      showMessage(result.message || 'Checkout is not available yet.', 'error')
-    }
+    if (result?.url) window.open(result.url, '_blank')
+    else showMsg('Stripe not configured yet — coming soon!', 'error')
   }
+
+  const currentTier = status?.tier || 'free'
+  const tierInfo = TIERS[currentTier] || TIERS.free
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-400 text-sm">Loading subscription status...</p>
+        <div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin"
+          style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="max-w-2xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
+    <div className="flex flex-col gap-6 p-6" style={{ minHeight: '100%', maxWidth: '800px' }}>
 
-        {message && (
-          <div className={`rounded-xl px-4 py-3 text-sm font-medium border ${
-            messageType === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-rose-50 border-rose-200 text-rose-700'
-          }`}>
-            {message}
-          </div>
-        )}
-
-        {/* ── Current tier card ── */}
-        <div className="bg-[#0C2340] rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[#C9962C] text-xs font-semibold uppercase tracking-wide">
-                Current Plan
-              </p>
-              <p className="text-3xl font-bold text-white mt-1">
-                {status?.tier_label || 'Free'}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-[#C9962C] text-xl font-bold">
-              L
-            </div>
-          </div>
-
-          {/* Usage bars — only meaningful on Free tier */}
-          {status?.tier === 'free' && (
-            <div className="mt-5 flex flex-col gap-3">
-              <UsageBar
-                label="Transactions this month"
-                used={status.monthly_tx_used}
-                limit={status.monthly_tx_limit}
-                atLimit={status.is_at_tx_limit}
-              />
-              <UsageBar
-                label="OCR uploads this month"
-                used={status.monthly_ocr_used}
-                limit={status.monthly_ocr_limit}
-                atLimit={status.is_at_ocr_limit}
-              />
-              <UsageBar
-                label="Businesses"
-                used={status.businesses_used}
-                limit={status.max_businesses}
-                atLimit={status.is_at_business_limit}
-              />
-            </div>
-          )}
-
-          {status?.tier !== 'free' && (
-            <p className="text-white/60 text-sm mt-3">
-              Unlimited transactions and OCR uploads · {status?.businesses_used}/{status?.max_businesses} businesses used
-            </p>
-          )}
+      {/* Flash message */}
+      {message.text && (
+        <div className="rounded-xl px-4 py-3 text-sm font-medium"
+          style={{
+            background: message.type === 'error' ? 'rgba(251,113,133,0.1)' : 'rgba(52,211,153,0.1)',
+            border: `1px solid ${message.type === 'error' ? 'rgba(251,113,133,0.3)' : 'rgba(52,211,153,0.3)'}`,
+            color: message.type === 'error' ? '#FB7185' : '#34D399',
+          }}>
+          {message.text}
         </div>
-
-        {/* ── At-limit warning ── */}
-        {status?.is_at_tx_limit && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <p className="text-sm text-amber-800 font-medium">
-              You've reached your monthly transaction limit.
-            </p>
-            <p className="text-xs text-amber-600 mt-0.5">
-              Upgrade below for unlimited transactions, or wait until next month.
-            </p>
-          </div>
-        )}
-
-        {/* ── Upgrade tiers ── */}
-        {status?.tier === 'free' && (
-          <div className="grid grid-cols-2 gap-4">
-            <TierCard
-              tier="growth"
-              label="Growth"
-              price="$19.99"
-              period="/month"
-              features={TIER_FEATURES.growth}
-              onUpgrade={() => handleCheckout('growth')}
-              loading={checkingOut === 'growth'}
-            />
-            <TierCard
-              tier="professional"
-              label="Professional"
-              price="$49.99"
-              period="/month"
-              features={TIER_FEATURES.professional}
-              highlight
-              onUpgrade={() => handleCheckout('professional')}
-              loading={checkingOut === 'professional'}
-            />
-          </div>
-        )}
-
-        {/* ── License key activation ── */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <h3 className="font-semibold text-[#0C2340] text-sm mb-1">
-            Have a License Key?
-          </h3>
-          <p className="text-xs text-gray-400 mb-3">
-            If you purchased a license separately or received a key, activate it here.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="LEDGERAI-GROWTH-XXXXXXXX"
-              value={licenseKey}
-              onChange={e => setLicenseKey(e.target.value)}
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#C9962C]"
-            />
-            <button
-              onClick={handleActivate}
-              disabled={activating || !licenseKey.trim() || backendStatus === 'disconnected'}
-              className="bg-[#0C2340] hover:bg-[#0a1d38] disabled:opacity-40 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-            >
-              {activating ? 'Activating...' : 'Activate'}
-            </button>
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-gray-400">
-          No auto-renewal without your explicit, signed consent.
-          Cancel anytime — your data is always yours.
-        </p>
-
-      </div>
-    </div>
-  )
-}
-
-// ── Usage bar component ────────────────────────────────────────────────────────
-function UsageBar({ label, used, limit, atLimit }) {
-  const pct = limit ? Math.min(100, (used / limit) * 100) : 0
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-xs text-white/60">{label}</span>
-        <span className={`text-xs font-medium ${atLimit ? 'text-rose-300' : 'text-white/80'}`}>
-          {used}{limit ? `/${limit}` : ''}
-        </span>
-      </div>
-      <div className="bg-white/10 rounded-full h-1.5">
-        <div
-          className={`h-1.5 rounded-full transition-all ${atLimit ? 'bg-rose-400' : 'bg-[#C9962C]'}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
-// ── Tier upgrade card ──────────────────────────────────────────────────────────
-function TierCard({ label, price, period, features, highlight, onUpgrade, loading }) {
-  return (
-    <div className={`rounded-2xl p-5 border-2 flex flex-col gap-3 ${
-      highlight ? 'border-[#C9962C] bg-white' : 'border-gray-200 bg-white'
-    }`}>
-      {highlight && (
-        <span className="text-xs font-bold text-[#C9962C] uppercase tracking-wide">
-          Most Popular
-        </span>
       )}
-      <div>
-        <p className="font-bold text-[#0C2340] text-lg">{label}</p>
-        <p className="text-2xl font-bold text-[#0C2340] mt-1">
-          {price}<span className="text-xs font-normal text-gray-400">{period}</span>
+
+      {/* Current plan */}
+      <div className="rounded-2xl p-6"
+        style={{ background: 'var(--card)', border: `1px solid ${tierInfo.color}33` }}>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-2)' }}>CURRENT PLAN</p>
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold" style={{ color: tierInfo.color }}>
+                {tierInfo.name}
+              </h2>
+              <span className="text-sm px-2.5 py-1 rounded-full font-semibold"
+                style={{ background: tierInfo.color + '18', color: tierInfo.color }}>
+                {tierInfo.price}
+              </span>
+            </div>
+            {status?.expires_at && (
+              <p className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>
+                Expires: {new Date(status.expires_at).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+          {currentTier === 'free' && (
+            <span className="text-xs px-3 py-1.5 rounded-full font-semibold"
+              style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.2)', color: '#22D3EE' }}>
+              Upgrade Available
+            </span>
+          )}
+        </div>
+
+        {/* Usage bars */}
+        {currentTier === 'free' && status?.usage && (
+          <div className="flex flex-col gap-3 mt-5 pt-5" style={{ borderTop: '1px solid var(--border-soft)' }}>
+            <p className="text-xs font-semibold" style={{ color: 'var(--text-2)' }}>THIS MONTH'S USAGE</p>
+            <UsageBar
+              label="Transactions"
+              used={status.usage.transactions || 0}
+              limit={25}
+              color="#22D3EE"
+            />
+            <UsageBar
+              label="OCR Uploads"
+              used={status.usage.ocr_uploads || 0}
+              limit={5}
+              color="#A78BFA"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Upgrade cards */}
+      {currentTier === 'free' && (
+        <div className="grid grid-cols-2 gap-4">
+          {['growth', 'professional'].map(tier => {
+            const t = TIERS[tier]
+            return (
+              <div key={tier} className="rounded-2xl p-5 flex flex-col gap-4"
+                style={{
+                  background: 'var(--card)',
+                  border: `1px solid ${t.color}33`,
+                }}>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-bold text-base" style={{ color: t.color }}>{t.name}</h3>
+                    {tier === 'growth' && (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        style={{ background: 'rgba(34,211,238,0.1)', color: '#22D3EE' }}>
+                        Popular
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xl font-bold" style={{ color: 'var(--text-0)' }}>{t.price}</p>
+                </div>
+
+                <div className="flex flex-col gap-2 flex-1">
+                  {t.features.map((f, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                        style={{ background: t.color + '22', color: t.color, fontSize: '10px' }}>✓</span>
+                      <span className="text-xs" style={{ color: 'var(--text-1)' }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => handleCheckout(tier)}
+                  disabled={checkingOut === tier}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
+                  style={{
+                    background: t.color,
+                    color: '#04141a',
+                    opacity: checkingOut === tier ? 0.7 : 1,
+                  }}>
+                  {checkingOut === tier ? 'Loading...' : `Upgrade to ${t.name}`}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* License key activation */}
+      <div className="rounded-2xl p-5"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+        <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-0)' }}>
+          Activate License Key
+        </h3>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={licenseKey}
+            onChange={e => setLicenseKey(e.target.value)}
+            placeholder="LEDGERAI-GROWTH-XXXXXXXX"
+            className="flex-1 px-3 py-2 rounded-xl text-sm outline-none"
+            style={{
+              background: 'var(--card-2)', border: '1px solid var(--border)',
+              color: 'var(--text-0)', fontFamily: 'var(--font-mono)',
+            }}
+            onKeyDown={e => e.key === 'Enter' && handleActivate()}
+          />
+          <button
+            onClick={handleActivate}
+            disabled={activating || !licenseKey.trim()}
+            className="px-5 py-2 rounded-xl text-sm font-bold transition-all"
+            style={{
+              background: 'var(--accent)', color: '#04141a',
+              opacity: activating || !licenseKey.trim() ? 0.5 : 1,
+            }}>
+            {activating ? 'Activating...' : 'Activate'}
+          </button>
+        </div>
+        <p className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>
+          Have a license key from your Ledger AI purchase? Enter it here.
         </p>
       </div>
-      <ul className="flex flex-col gap-1.5 flex-1">
-        {features.map((f, i) => (
-          <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
-            <span className="text-emerald-500 flex-shrink-0">✓</span>
-            {f}
-          </li>
-        ))}
-      </ul>
-      <button
-        onClick={onUpgrade}
-        disabled={loading}
-        className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
-          highlight
-            ? 'bg-[#C9962C] hover:bg-[#B88A24] text-white'
-            : 'bg-[#0C2340] hover:bg-[#0a1d38] text-white'
-        }`}
-      >
-        {loading ? 'Loading...' : 'Upgrade'}
-      </button>
+
+      {/* Privacy note */}
+      <div className="text-center">
+        <p className="text-xs" style={{ color: 'var(--text-2)' }}>
+          🔒 Luca is local-first — your financial data never leaves your device.
+          Payments are processed securely by Stripe.
+        </p>
+      </div>
+
     </div>
   )
 }
