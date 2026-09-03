@@ -17,6 +17,8 @@ import ReportsPage from './pages/ReportsPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
 import SubscriptionPage from './pages/SubscriptionPage'
+import IncomePage from './pages/IncomePage'
+
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -113,7 +115,7 @@ export default function App() {
           theme={theme}
           setTheme={setTheme}
         />
-
+     
         {/* Page */}
         <main className="flex-1 overflow-y-auto" style={{ background: 'var(--bg)' }}>
           {activeTab === 'dashboard'    && <DashboardPage    {...pageProps} onNavigate={setActiveTab} />}
@@ -124,7 +126,7 @@ export default function App() {
           {activeTab === 'reports'      && <ReportsPage      {...pageProps} />}
           {activeTab === 'subscription' && <SubscriptionPage {...pageProps} />}
           {activeTab === 'settings'     && <SettingsPage     {...pageProps} onResetOnboarding={() => setOnboarded(false)} />}
-          {activeTab === 'banks'        && <BanksPlaceholder />}
+          {activeTab === 'income'       && <IncomePage       {...pageProps} />}
         </main>
       </div>
     </div>

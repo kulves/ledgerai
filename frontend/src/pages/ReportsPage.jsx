@@ -59,19 +59,53 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
     setTimeout(() => setDownloaded(false), 3000)
   }
  
+  const handleExcel = async () => {
+    if (!activeBusiness) return
+    const url = `http://127.0.0.1:8000/api/reports/excel?business_id=${activeBusiness.id}&start_date=${period.start}&end_date=${period.end}`
+    window.open(url, '_blank')
+    
+  }
   const categories = report?.by_category || {}
   const catEntries = Object.entries(categories).sort((a, b) => b[1] - a[1])
+  const netProfit = (report?.net_profit || 0)
+  const cashFlow = netProfit  // Will show income - expenses once income is tracked
   const totalExpenses = report?.total_expenses || 0
-  const totalDeductible = report?.total_deductible || 0
+  const totalDeductible  = report?.total_deductible  || 0
   const mileageDeduction = report?.mileage_deduction || 0
   const totalDeductions = totalDeductible + mileageDeduction
   const totalMiles = report?.total_miles || 0
  
   const statCards = [
-    { label: 'Total Expenses', value: fmt(totalExpenses), sub: `${report?.transaction_count || 0} transactions`, color: '#FB7185' },
-    { label: 'Total Deductible', value: fmt(totalDeductible), sub: 'Expense deductions', color: '#22D3EE' },
-    { label: 'Mileage Deduction', value: fmt(mileageDeduction), sub: `${totalMiles.toFixed(1)} miles`, color: '#A78BFA' },
-    { label: 'Total Deductions', value: fmt(totalDeductions), sub: 'Expenses + mileage', color: '#C9962C' },
+    {
+      label: 'Cash Flow',
+      value: fmt(cashFlow),
+      sub: cashFlow >= 0 ? 'Net positive' : 'Net negative',
+      color: cashFlow >= 0 ? '#34D399' : '#FB7185',
+    },
+    {
+      label: 'Total Expenses',
+      value: fmt(totalExpenses),
+      sub: `${report?.expense_count || 0} transactions`,
+      color: '#FB7185',
+    },
+    {
+      label: 'Mileage Deduction',
+      value: fmt(mileageDeduction),
+      sub: `${totalMiles.toFixed(1)} miles`,
+      color: '#A78BFA',
+    },
+    {
+      label: 'Total Deductions',
+      value: fmt(totalDeductions),
+      sub: 'Expenses + mileage',
+      color: '#C9962C',
+    },
+    {
+      label: 'Net Profit / Loss',
+      value: fmt(netProfit),
+      sub: 'Income minus expenses',
+      color: netProfit >= 0 ? '#34D399' : '#FB7185',
+    },
   ]
  
   return (
@@ -113,7 +147,7 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
       </div>
  
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-5 gap-4">
         {statCards.map((card, i) => (
           <div key={i} className="rounded-2xl p-5"
             style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
@@ -232,6 +266,12 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
         }}
       >
         {downloading ? 'Generating PDF...' : downloaded ? '✓ PDF Downloaded!' : '↓ Download PDF Report (Free — watermarked)'}
+      </button>
+
+      <button onClick={handleExcel} disabled={!report}
+        className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#34D399', opacity: !report ? 0.5 : 1 }}>
+        ↓ Download Excel Report (.xlsx)
       </button>
  
     </div>

@@ -145,6 +145,39 @@ def init_db() -> None:
         )
     """)
 
+    # ── Income table ──────────────────────────────────────────────────────
+    # Tracks all income sources for cash flow and P&L calculations.
+    # Supports manual entry and auto-detection from 1099/invoice uploads.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS income (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            business_id     INTEGER NOT NULL REFERENCES businesses(id),
+            date            TEXT    NOT NULL,
+            source          TEXT    NOT NULL,
+            amount          REAL    NOT NULL,
+            category        TEXT    NOT NULL DEFAULT 'Other Income',
+            description     TEXT,
+            doc_type        TEXT    DEFAULT 'manual',
+            document_id     INTEGER REFERENCES documents(id),
+            created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+            updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+ 
+    # Income categories for reference:
+    # 'Consulting / Freelance Income'
+    # 'Product Sales'
+    # 'Service Revenue'
+    # '1099-NEC Income'
+    # '1099-MISC Income'
+    # 'Rental Income'
+    # 'Commission Income'
+    # 'Investment Income'
+    # 'Royalty Income'
+    # 'Grant / Award Income'
+    # 'Refunds / Reimbursements'
+    # 'Other Income'
+
     # ── License table ─────────────────────────────────────────────────────
     # Single-row table tracking the user's subscription tier.
     # Starts on Free tier. Updated when a license key is activated

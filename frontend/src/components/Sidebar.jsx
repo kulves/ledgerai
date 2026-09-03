@@ -28,6 +28,12 @@ const NAV_ITEMS = [
       <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
     </svg>
   )},
+  { id: 'income', label: 'Income', icon: (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="1" x2="12" y2="23"/>
+    <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+  </svg>
+)},
   { id: 'reports', label: 'Reports', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
@@ -146,6 +152,55 @@ export default function Sidebar({ activeTab, setActiveTab, businesses, selectedB
           )}
         </div>
       )}
+
+      {/* Add Business inline form */}
+      {showAddBusiness && !collapsed && (
+        <div className="px-3 mb-3">
+          <div
+            className="rounded-xl p-3 flex flex-col gap-2"
+            style={{ background: 'var(--card-2)', border: '1px solid rgba(34,211,238,0.2)' }}
+          >
+            <p className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>New Business</p>
+            <input
+              type="text"
+              placeholder="Business name"
+              id="new-biz-name"
+              className="rounded-lg px-3 py-1.5 text-xs outline-none w-full"
+              style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-0)' }}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  const name = document.getElementById('new-biz-name').value.trim()
+                  if (!name) return
+                  const res = await fetch('http://127.0.0.1:8000/api/businesses/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, entity_type: 'sole_prop', state: 'CA' })
+                  })
+                  if (res.ok) {
+                    setShowAddBusiness(false)
+                    window.location.reload()
+                  }
+                }}
+                className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
+                style={{ background: 'var(--accent)', color: '#04141a' }}
+              >
+                Add
+              </button>
+              <button
+                onClick={() => setShowAddBusiness(false)}
+                className="px-3 py-1.5 rounded-lg text-xs transition-all"
+                style={{ background: 'var(--border)', color: 'var(--text-1)' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main nav */}
 
       {/* Main nav */}
       <nav className="flex flex-col gap-0.5 px-3 flex-1 overflow-y-auto">

@@ -59,8 +59,13 @@ def get_dashboard(business_id: int):
             SELECT
                 COUNT(*)                                          AS expense_count,
                 COALESCE(SUM(amount), 0)                         AS total_expenses,
-                COALESCE(SUM(CASE WHEN deductible=1 THEN amount ELSE 0 END), 0)
-                                                                  AS total_deductible,
+                COALESCE(SUM(
+                    CASE
+                        WHEN deductible=1 AND category LIKE '%Meals%' THEN amount * 0.5
+                        WHEN deductible=1 THEN amount
+                        ELSE 0
+                    END
+                    ), 0) AS total_deductible,
                 COALESCE(SUM(CASE WHEN needs_review=1 THEN 1 ELSE 0 END), 0)
                                                                   AS needs_review_count
             FROM expenses
@@ -89,6 +94,17 @@ def get_dashboard(business_id: int):
         total_deductions = round(
             float(ytd["total_deductible"]) + float(mileage["total_deduction"]), 2
         )
+        # ── Year-to-date income ────────────────────────────────────────────────
+        try:
+            income = conn.execute("""
+                SELECT COALESCE(SUM(amount), 0) AS total_income
+                FROM income
+                WHERE business_id = ? AND date BETWEEN ? AND ?
+            """, (business_id, year_start, today_str)).fetchone()
+            total_income = round(float(income["total_income"]), 2)
+        except Exception:
+            total_income = 0.0
+        net_profit = round(total_income - float(ytd["total_expenses"]), 2)
 
         # ── Recent expenses (last 5) ───────────────────────────────────────
         recent_expenses = conn.execute("""
@@ -114,6 +130,58 @@ def get_dashboard(business_id: int):
             (business_id,)
         ).fetchone()["count"]
 
+        # Monthly breakdowns for Live Trend chart
+        monthly_expenses = conn.execute("""
+            SELECT strftime('%Y-%m', date) AS month,
+                   COALESCE(SUM(amount), 0) AS total,
+                   COALESCE(SUM(CASE
+                       WHEN deductible=1 AND category LIKE '%Meal%' THEN amount*0.5
+                       WHEN deductible=1 THEN amount ELSE 0
+                   END), 0) AS deductions
+            FROM expenses
+            WHERE business_id = ? AND date BETWEEN ? AND ?
+            GROUP BY month ORDER BY month
+        """, (business_id, year_start, today_str)).fetchall()
+
+        monthly_mileage = conn.execute("""
+            SELECT strftime('%Y-%m', date) AS month,
+                   COALESCE(SUM(deduction_amount), 0) AS deduction
+            FROM mileage_trips
+            WHERE business_id = ? AND date BETWEEN ? AND ?
+              AND trip_type = 'business'
+            GROUP BY month ORDER BY month
+        """, (business_id, year_start, today_str)).fetchall()
+
+        monthly_income_rows = []
+        try:
+            monthly_income_rows = conn.execute("""
+                SELECT strftime('%Y-%m', date) AS month,
+                       COALESCE(SUM(amount), 0) AS total
+                FROM income
+                WHERE business_id = ? AND date BETWEEN ? AND ?
+                GROUP BY month ORDER BY month
+            """, (business_id, year_start, today_str)).fetchall()
+        except Exception:
+            pass
+
+        all_months = sorted(set(
+            [r['month'] for r in monthly_expenses] +
+            [r['month'] for r in monthly_mileage] +
+            [r['month'] for r in monthly_income_rows]
+        ))
+        exp_by_month = {r['month']: float(r['total'])     for r in monthly_expenses}
+        ded_by_month = {r['month']: float(r['deductions']) for r in monthly_expenses}
+        mil_by_month = {r['month']: float(r['deduction'])  for r in monthly_mileage}
+        inc_by_month = {r['month']: float(r['total'])      for r in monthly_income_rows}
+
+        monthly_chart = {
+            'months':     all_months,
+            'expenses':   [exp_by_month.get(m, 0) for m in all_months],
+            'deductions': [ded_by_month.get(m, 0) + mil_by_month.get(m, 0) for m in all_months],
+            'income':     [inc_by_month.get(m, 0) for m in all_months],
+            'cashflow':   [inc_by_month.get(m, 0) - exp_by_month.get(m, 0) for m in all_months],
+        }
+
         return {
             "business":  dict(business),
             "period":    {"year_start": year_start, "today": today_str},
@@ -123,6 +191,8 @@ def get_dashboard(business_id: int):
                 "total_deductible":   round(float(ytd["total_deductible"]), 2),
                 "needs_review_count": ytd["needs_review_count"],
                 "total_deductions":   total_deductions,
+                "total_income":       total_income,
+                "net_profit":         net_profit,
             },
             "month": {
                 "total_expenses": round(float(month["month_total"]), 2),
@@ -136,6 +206,7 @@ def get_dashboard(business_id: int):
             "recent_expenses": [dict(e) for e in recent_expenses],
             "recent_mileage":  [dict(m) for m in recent_mileage],
             "document_count":  doc_count,
+            "monthly_chart":   monthly_chart,
         }
 
     except HTTPException:
