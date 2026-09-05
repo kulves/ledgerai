@@ -76,9 +76,9 @@ def create_expense(expense: ExpenseCreate):
         cursor.execute("""
             INSERT INTO expenses
                 (business_id, date, vendor, amount, category,
-                 description, deductible, confidence, needs_review,
+                 description, notes, deductible, confidence, needs_review,
                  receipt_path, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             expense.business_id,
             expense.date,
@@ -86,6 +86,7 @@ def create_expense(expense: ExpenseCreate):
             expense.amount,
             expense.category,
             expense.description,
+            expense.notes,
             1 if expense.deductible else 0,
             expense.confidence,
             1 if expense.needs_review else 0,

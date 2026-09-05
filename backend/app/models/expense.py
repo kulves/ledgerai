@@ -25,6 +25,7 @@ class ExpenseBase(BaseModel):
     amount:       float  = Field(..., gt=0, description="Amount in USD (must be positive)")
     category:     str    = Field(..., description="IRS expense category")
     description:  Optional[str]   = Field(None, description="Optional description or notes")
+    notes:        Optional[str]   = Field(None, description="Freeform notes added by the user, separate from description")
     deductible:   bool            = Field(True, description="Is this expense tax deductible?")
     confidence:   str             = Field("high", description="Categorization confidence: high/medium/low")
     needs_review: bool            = Field(False, description="Flag for manual review")
@@ -50,6 +51,7 @@ class ExpenseUpdate(BaseModel):
     amount:       Optional[float] = Field(None, gt=0)
     category:     Optional[str]   = None
     description:  Optional[str]   = None
+    notes:        Optional[str]   = None
     deductible:   Optional[bool]  = None
     confidence:   Optional[str]   = None
     needs_review: Optional[bool]  = None

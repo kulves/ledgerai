@@ -72,7 +72,8 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
       return (
         e.vendor?.toLowerCase().includes(q) ||
         e.category?.toLowerCase().includes(q) ||
-        e.description?.toLowerCase().includes(q)
+        e.description?.toLowerCase().includes(q) ||
+        e.notes?.toLowerCase().includes(q)
       )
     })
     .sort((a, b) => {
@@ -208,9 +209,20 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
 
               {/* Description + vendor */}
               <div className="min-w-0 pr-4">
-                <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-0)' }}>
-                  {expense.description || expense.vendor || 'Unnamed expense'}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-0)' }}>
+                    {expense.description || expense.vendor || 'Unnamed expense'}
+                  </p>
+                  {expense.notes && (
+                    <span
+                      title={expense.notes}
+                      className="flex-shrink-0 text-xs cursor-help opacity-60 hover:opacity-100"
+                      style={{ color: 'var(--text-2)' }}
+                    >
+                      📝
+                    </span>
+                  )}
+                </div>
                 {expense.description && expense.vendor && (
                   <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-2)' }}>
                     {expense.vendor}

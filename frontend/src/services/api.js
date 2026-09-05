@@ -6,9 +6,9 @@
  */
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
-
+ 
 export const api = {
-
+ 
   // ── Health ──────────────────────────────────────────────────────────────
   async getHealth() {
     try {
@@ -20,7 +20,7 @@ export const api = {
       return { status: 'offline', error: error.message, version: 'Unknown' };
     }
   },
-
+ 
   // ── Luca chat ────────────────────────────────────────────────────────────
   async askLuca(question, messages = [], businessName = null) {
     try {
@@ -44,7 +44,7 @@ export const api = {
       }
     }
   },
-
+ 
   // ── Luca categorization ──────────────────────────────────────────────────
   async categorizeExpense(vendor, amount, description = '') {
     try {
@@ -64,7 +64,7 @@ export const api = {
       };
     }
   },
-
+ 
   // ── Businesses ───────────────────────────────────────────────────────────
   async getBusinesses() {
     try {
@@ -76,7 +76,7 @@ export const api = {
       return [];
     }
   },
-
+ 
   async createBusiness(name, entityType = 'sole_prop', state = 'CA') {
     try {
       const response = await fetch(`${API_BASE_URL}/api/businesses/`, {
@@ -91,7 +91,7 @@ export const api = {
       return null;
     }
   },
-
+ 
   // ── Expenses ─────────────────────────────────────────────────────────────
   async getExpenses(businessId = null) {
     try {
@@ -106,7 +106,7 @@ export const api = {
       return [];
     }
   },
-
+ 
   async createExpense(expenseData) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/expenses/`, {
@@ -121,7 +121,7 @@ export const api = {
       return null;
     }
   },
-
+ 
   async deleteExpense(expenseId) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}`, {
@@ -134,7 +134,7 @@ export const api = {
       return null;
     }
   },
-
+ 
   // ── Mileage ──────────────────────────────────────────────────────────────
   async getMileageTrips(businessId = null) {
     try {
@@ -149,7 +149,7 @@ export const api = {
       return [];
     }
   },
-
+ 
   async getMileageSummary(businessId) {
     try {
       const response = await fetch(
@@ -162,7 +162,7 @@ export const api = {
       return {};
     }
   },
-
+ 
   async createMileageTrip(tripData) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/mileage/`, {
@@ -177,7 +177,7 @@ export const api = {
       return null;
     }
   },
-
+ 
   async deleteMileageTrip(tripId) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/mileage/${tripId}`, {
@@ -190,14 +190,14 @@ export const api = {
       return null;
     }
   },
-
+ 
   // ── Documents ─────────────────────────────────────────────────────────────
   async uploadDocument(file, businessId) {
     try {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('business_id', businessId)
-
+ 
       const response = await fetch(`${API_BASE_URL}/api/documents/upload`, {
         method: 'POST',
         body: formData
@@ -211,7 +211,7 @@ export const api = {
       return { success: false, message: error.message }
     }
   },
-
+ 
   async getDocuments(businessId = null) {
     try {
       const url = businessId
@@ -225,7 +225,7 @@ export const api = {
       return []
     }
   },
-
+ 
   async deleteDocument(docId) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/documents/${docId}`, {
@@ -238,7 +238,27 @@ export const api = {
       return null
     }
   },
-
+ 
+  async updateDocument(docId, updates) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/documents/${docId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('updateDocument failed:', error)
+      return null
+    }
+  },
+ 
+  // Not async — just builds the URL the <img>/<iframe> preview points to
+  getDocumentFileUrl(docId) {
+    return `${API_BASE_URL}/api/documents/${docId}/file`
+  },
+ 
   // ── Reports ───────────────────────────────────────────────────────────────
   async getReportSummary(businessId, startDate = null, endDate = null) {
     try {
@@ -253,21 +273,21 @@ export const api = {
       return null
     }
   },
-
+ 
   async downloadReportPdf(businessId, startDate = null, endDate = null, watermark = true) {
     try {
       let url = `${API_BASE_URL}/api/reports/pdf?business_id=${businessId}&watermark=${watermark}`
       if (startDate) url += `&start_date=${startDate}`
       if (endDate)   url += `&end_date=${endDate}`
-
+ 
       const response = await fetch(url)
       if (!response.ok) throw new Error(`Backend error: ${response.status}`)
-
+ 
       // Get filename from Content-Disposition header
       const disposition = response.headers.get('Content-Disposition') || ''
       const match = disposition.match(/filename="(.+)"/)
       const filename = match ? match[1] : 'LedgerAI_Report.pdf'
-
+ 
       // Trigger browser download
       const blob = await response.blob()
       const downloadUrl = URL.createObjectURL(blob)
@@ -278,14 +298,14 @@ export const api = {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(downloadUrl)
-
+ 
       return { success: true, filename }
     } catch (error) {
       console.error('downloadReportPdf failed:', error)
       return { success: false, message: error.message }
     }
   },
-
+ 
   // ── Dashboard ──────────────────────────────────────────────────────────────
   async getDashboard(businessId) {
     try {
@@ -299,7 +319,7 @@ export const api = {
       return null
     }
   },
-
+ 
   // ── Settings ──────────────────────────────────────────────────────────────
   async getAppInfo() {
     try {
@@ -311,7 +331,7 @@ export const api = {
       return null
     }
   },
-
+ 
   async getStats() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/settings/stats`)
@@ -322,7 +342,7 @@ export const api = {
       return null
     }
   },
-
+ 
   async updateBusiness(businessId, updates) {
     try {
       const response = await fetch(
@@ -340,7 +360,7 @@ export const api = {
       return null
     }
   },
-
+ 
   async deactivateBusiness(businessId) {
     try {
       const response = await fetch(
@@ -354,7 +374,7 @@ export const api = {
       return null
     }
   },
-
+ 
   async clearAllData(confirmation) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/settings/clear`, {
@@ -369,7 +389,7 @@ export const api = {
       return null
     }
   },
-
+ 
   // ── License & Subscription ──────────────────────────────────────────────────
   async getLicenseStatus() {
     try {
@@ -381,7 +401,7 @@ export const api = {
       return null
     }
   },
-
+ 
   async activateLicense(licenseKey) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/license/activate`, {
@@ -397,7 +417,7 @@ export const api = {
       return { success: false, message: error.message }
     }
   },
-
+ 
   async createCheckout(tier) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/license/checkout`, {
@@ -411,7 +431,7 @@ export const api = {
       return { success: false, message: error.message }
     }
   },
-
+ 
   async downgradeLicense() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/license/downgrade`, {
@@ -423,5 +443,5 @@ export const api = {
       return null
     }
   }
-
+ 
 };

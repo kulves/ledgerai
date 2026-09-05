@@ -34,39 +34,51 @@ import os
 from pathlib import Path
 from backend.app.config import get_settings
 from backend.app.logger import get_logger
-
+ 
 logger = get_logger()
 settings = get_settings()
-
+ 
 # Resolve absolute path to the database file
 DB_PATH = Path(__file__).parent.parent.parent / settings.database_path
-
-
+ 
+ 
 def get_db() -> sqlite3.Connection:
     """
     Open and return a connection to the SQLite database.
-
+ 
     Returns a standard sqlite3.Connection. Row factory is set to
     sqlite3.Row so columns can be accessed by name (row['amount'])
     rather than by index (row[2]).
-
+ 
     The database file is created automatically if it doesn't exist.
     """
     # Ensure the database directory exists
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-
+ 
     conn = sqlite3.connect(str(DB_PATH))
-
+ 
     # Row factory: lets us access columns by name instead of index
     # e.g. row['amount'] instead of row[2]
     conn.row_factory = sqlite3.Row
-
+ 
     # Enable foreign key enforcement (SQLite disables this by default)
     conn.execute("PRAGMA foreign_keys = ON")
-
+ 
     return conn
-
-
+ 
+ 
+def _add_column_if_missing(conn: sqlite3.Connection, table: str, column: str, coltype: str) -> None:
+    """
+    Add a column to an existing table if it doesn't already have it.
+    SQLite has no 'ADD COLUMN IF NOT EXISTS', so we check first.
+    Safe to call every startup — a no-op once the column exists.
+    """
+    existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in existing:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {coltype}")
+        logger.info(f"Migration: added column '{column}' to '{table}'")
+ 
+ 
 def init_db() -> None:
     """
     Create all database tables if they don't exist yet.
@@ -74,10 +86,10 @@ def init_db() -> None:
     Safe to call multiple times — uses CREATE TABLE IF NOT EXISTS.
     """
     logger.info(f"Initializing database at: {DB_PATH}")
-
+ 
     conn = get_db()
     cursor = conn.cursor()
-
+ 
     # ── Businesses table ──────────────────────────────────────────────────
     # Each user can have multiple businesses (1 on Free tier, 2 on Growth,
     # up to 5 on Professional — enforced in the route layer, not here)
@@ -91,7 +103,7 @@ def init_db() -> None:
             is_active   INTEGER NOT NULL DEFAULT 1
         )
     """)
-
+ 
     # ── Expenses table ────────────────────────────────────────────────────
     # Core table for all financial transactions.
     # Each expense belongs to a business and has an IRS category.
@@ -112,7 +124,7 @@ def init_db() -> None:
             updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
         )
     """)
-
+ 
     # ── Mileage trips table ───────────────────────────────────────────────
     # Separate from expenses — mileage deduction uses IRS standard rate
     # (72.5 cents/mile for 2026) not actual dollar amounts logged by user.
@@ -128,7 +140,7 @@ def init_db() -> None:
             created_at      TEXT    NOT NULL DEFAULT (datetime('now'))
         )
     """)
-
+ 
     # ── Documents table ───────────────────────────────────────────────────
     # Tracks uploaded receipts and documents processed by Luca vision.
     cursor.execute("""
@@ -144,7 +156,7 @@ def init_db() -> None:
             created_at      TEXT    NOT NULL DEFAULT (datetime('now'))
         )
     """)
-
+ 
     # ── Income table ──────────────────────────────────────────────────────
     # Tracks all income sources for cash flow and P&L calculations.
     # Supports manual entry and auto-detection from 1099/invoice uploads.
@@ -177,7 +189,7 @@ def init_db() -> None:
     # 'Grant / Award Income'
     # 'Refunds / Reimbursements'
     # 'Other Income'
-
+ 
     # ── License table ─────────────────────────────────────────────────────
     # Single-row table tracking the user's subscription tier.
     # Starts on Free tier. Updated when a license key is activated
@@ -193,18 +205,21 @@ def init_db() -> None:
             updated_at          TEXT    NOT NULL DEFAULT (datetime('now'))
         )
     """)
-
+ 
     # Ensure the single license row always exists (id=1, defaults to free)
     cursor.execute("""
         INSERT OR IGNORE INTO license (id, tier) VALUES (1, 'free')
     """)
-
+ 
+    # ── Migrations (safe to re-run — only adds a column if missing) ────────
+    _add_column_if_missing(conn, "expenses", "notes", "TEXT DEFAULT ''")
+ 
     conn.commit()
     conn.close()
-
+ 
     logger.info("Database initialized — all tables ready")
-
-
+ 
+ 
 def close_db(conn: sqlite3.Connection) -> None:
     """Close a database connection cleanly."""
     if conn:

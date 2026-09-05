@@ -33,6 +33,12 @@ Updated to support PDF extraction via two paths:
 routes/documents.py — Document Upload & Vision Extraction
 Improved PDF extraction with better amount detection and no vision fallback
 for text-based PDFs (avoids memory errors with llama3.2-vision).
+
+Also supports post-save editing: the extracted fields (vendor, amount,
+date, doc_type, description) are a best guess from OCR/vision and are
+often slightly wrong, so users can correct them from the Documents page,
+and can open the original file (image or PDF) inline to check it against
+what was extracted.
 """
  
 import os
@@ -42,6 +48,8 @@ import re
 import tempfile
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from backend.app.database import get_db
 from backend.app.luca.engine import luca
 from backend.app.logger import get_logger
@@ -410,6 +418,93 @@ def get_document(doc_id: int):
     except HTTPException:
         raise
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+ 
+ 
+@router.get("/{doc_id}/file")
+def get_document_file(doc_id: int):
+    """
+    Serve the original uploaded file so the frontend can preview it
+    (inline image, or PDF in an <iframe>/<object>).
+    """
+    conn = get_db()
+    try:
+        row = conn.execute("SELECT file_path, filename FROM documents WHERE id = ?", (doc_id,)).fetchone()
+    finally:
+        conn.close()
+ 
+    if not row:
+        raise HTTPException(status_code=404, detail=f"Document {doc_id} not found")
+ 
+    file_path = Path(row["file_path"])
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Original file is missing from disk")
+ 
+    media_types = {
+        ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+        ".gif": "image/gif", ".webp": "image/webp", ".pdf": "application/pdf",
+    }
+    media_type = media_types.get(file_path.suffix.lower(), "application/octet-stream")
+ 
+    # inline (not attachment) so browsers render it instead of downloading it
+    return FileResponse(
+        path=str(file_path),
+        media_type=media_type,
+        headers={"Content-Disposition": f'inline; filename="{row["filename"]}"'}
+    )
+ 
+ 
+class DocumentUpdate(BaseModel):
+    vendor: str | None = None
+    amount: float | None = None
+    date: str | None = None
+    doc_type: str | None = None
+    description: str | None = None
+    reviewed: bool | None = None
+ 
+ 
+@router.put("/{doc_id}")
+def update_document(doc_id: int, update: DocumentUpdate):
+    """
+    Edit a document's extracted data after it's been saved — OCR/vision
+    is a best guess, so users can correct vendor/amount/date/etc. here.
+    """
+    conn = get_db()
+    try:
+        row = conn.execute("SELECT * FROM documents WHERE id = ?", (doc_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail=f"Document {doc_id} not found")
+ 
+        doc = dict(row)
+        try:
+            extracted = json.loads(doc.get("extracted_data") or "{}")
+        except Exception:
+            extracted = {}
+ 
+        # Merge only the fields that were actually sent
+        updates = update.model_dump(exclude_unset=True, exclude={"doc_type", "reviewed"})
+        extracted.update({k: v for k, v in updates.items() if v is not None})
+ 
+        new_doc_type = update.doc_type if update.doc_type is not None else doc["doc_type"]
+        new_reviewed = int(update.reviewed) if update.reviewed is not None else doc["reviewed"]
+ 
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE documents
+            SET doc_type = ?, extracted_data = ?, reviewed = ?
+            WHERE id = ?
+        """, (new_doc_type, json.dumps(extracted), new_reviewed, doc_id))
+        conn.commit()
+ 
+        updated = dict(conn.execute("SELECT * FROM documents WHERE id = ?", (doc_id,)).fetchone())
+        updated["extracted_data"] = extracted
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()

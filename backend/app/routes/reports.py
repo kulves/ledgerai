@@ -235,15 +235,14 @@ def download_excel(
         LIGHT_HEX = "F5F4F0"
 
         def hdr_style(ws, row, cols, text, merge=True):
-            # Set value and style BEFORE merging
-            cell = ws.cell(row=row, column=1)
-            cell.value = text
+            cell = ws.cell(row=row, column=1, value=text)
+            if merge:
+                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=cols)
+            cell = ws.cell(row=row, column=1, value=text)
             cell.font = Font(bold=True, color="FFFFFF", size=12)
             cell.fill = PatternFill("solid", fgColor=NAVY_HEX)
             cell.alignment = Alignment(horizontal="left", vertical="center")
             ws.row_dimensions[row].height = 24
-            if merge:
-                pass  # merge disabled
 
         def col_hdr(ws, row, headers):
             for i, h in enumerate(headers, 1):
@@ -297,7 +296,7 @@ def download_excel(
             if is_header and label:
                 c1.font = Font(bold=True, color="FFFFFF", size=10)
                 c1.fill = PatternFill("solid", fgColor=NAVY_HEX)
-                pass  # merge disabled
+                ws1.merge_cells(start_row=r, start_column=1, end_row=r, end_column=3)
             else:
                 c1.font = Font(size=10)
             if value is not None:
