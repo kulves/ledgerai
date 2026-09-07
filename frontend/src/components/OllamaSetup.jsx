@@ -26,6 +26,15 @@ const CHAT_MODEL   = 'llama3.2:1b'
 const VISION_MODEL = 'llama3.2-vision'
 const BACKEND_URL  = 'http://127.0.0.1:8000'
 
+// Ollama 0.30.x+ breaks llama3.2-vision (Receipt Scanner) — see CLAUDE.md Critical Rule #3.
+// The generic ollama.com download always serves the latest release, so we point fresh
+// installs at this specific known-good tag instead.
+const PINNED_OLLAMA_VERSION = '0.24.0'
+const PINNED_OLLAMA_INSTALLER = `https://github.com/ollama/ollama/releases/download/v${PINNED_OLLAMA_VERSION}/OllamaSetup.exe`
+// First version known to break vision — used to warn users who already had a newer
+// Ollama installed before ever launching Luca (that path never hits the download button above).
+const FIRST_BROKEN_VISION_VERSION = '0.30.0'
+
 // Setup stages
 const STAGE = {
   CHECKING:        'checking',       // Initial check
@@ -37,6 +46,17 @@ const STAGE = {
   DONE:            'done',           // All done
 }
 
+// Compares dotted version strings, e.g. isVersionAtLeast('0.30.4', '0.30.0') → true
+function isVersionAtLeast(version, threshold) {
+  const v = version.split('.').map(n => parseInt(n, 10) || 0)
+  const t = threshold.split('.').map(n => parseInt(n, 10) || 0)
+  for (let i = 0; i < Math.max(v.length, t.length); i++) {
+    const a = v[i] || 0, b = t[i] || 0
+    if (a !== b) return a > b
+  }
+  return true
+}
+
 export default function OllamaSetup({ onComplete }) {
   const [stage, setStage]                 = useState(STAGE.CHECKING)
   const [chatProgress, setChatProgress]   = useState(0)
@@ -45,6 +65,7 @@ export default function OllamaSetup({ onComplete }) {
   const [error, setError]                 = useState(null)
   const [chatModelReady, setChatModelReady]     = useState(false)
   const [visionModelReady, setVisionModelReady] = useState(false)
+  const [versionWarning, setVersionWarning]     = useState(null)  // set if installed Ollama is too new for vision
   const pollRef = useRef(null)
   const pullingRef = useRef(false)
 
@@ -71,6 +92,23 @@ export default function OllamaSetup({ onComplete }) {
 
       setChatModelReady(hasChatModel)
       setVisionModelReady(hasVisionModel)
+
+      // Someone may already have Ollama installed (any version) before ever
+      // launching Luca — check it here since the pinned-installer download
+      // button below never runs in that case.
+      try {
+        const versionRes = await fetch(`${OLLAMA_URL}/api/version`, { signal: AbortSignal.timeout(2000) })
+        if (versionRes.ok) {
+          const { version } = await versionRes.json()
+          if (version && isVersionAtLeast(version, FIRST_BROKEN_VISION_VERSION)) {
+            setVersionWarning(version)
+          } else {
+            setVersionWarning(null)
+          }
+        }
+      } catch {
+        // Version check is best-effort — older Ollama builds may not expose this endpoint
+      }
 
       if (hasChatModel) {
         // Chat model ready — go straight to done (vision is optional)
@@ -188,7 +226,7 @@ export default function OllamaSetup({ onComplete }) {
 
   // ── Open Ollama download page in browser ───────────────────────────────────
   const openOllamaDownload = () => {
-    window.open('https://ollama.com/download/OllamaSetup.exe', '_blank')
+    window.open(PINNED_OLLAMA_INSTALLER, '_blank')
     startPollingForOllama()
   }
 
@@ -229,7 +267,7 @@ export default function OllamaSetup({ onComplete }) {
             </h2>
             <p className="text-gray-500 text-sm mt-1">
               {stage === STAGE.CHECKING       && 'Checking if Ollama and AI models are installed...'}
-              {stage === STAGE.NEED_OLLAMA    && "Luca needs Ollama to power its AI — it's free, local, and installs in 2 minutes."}
+              {stage === STAGE.NEED_OLLAMA    && "Luca uses a local AI engine to power your assistant — it's free, secure, and sets up in under 2 minutes."}
               {stage === STAGE.WAITING_OLLAMA && 'Install Ollama from the download that just started, then come back here.'}
               {stage === STAGE.OLLAMA_READY   && "Ollama is ready. Now Luca needs to download its AI model (~800MB)."}
               {stage === STAGE.PULLING_CHAT   && 'Downloading the AI chat engine. This takes 2–5 minutes depending on your connection.'}
@@ -251,8 +289,8 @@ export default function OllamaSetup({ onComplete }) {
             {stage === STAGE.NEED_OLLAMA && (
               <>
                 <InfoBox>
-                  Ollama is a free, open-source app that runs AI models locally on your computer.
-                  Your financial data never leaves your device.
+                  Luca runs powerful AI models directly on your computer, ensuring your
+                  financial data stays completely private and never leaves your device.
                 </InfoBox>
                 <button
                   onClick={openOllamaDownload}
@@ -290,6 +328,7 @@ export default function OllamaSetup({ onComplete }) {
             {stage === STAGE.OLLAMA_READY && (
               <>
                 <SuccessRow text="Ollama is installed and running" />
+                {versionWarning && <VersionWarningBox version={versionWarning} />}
 
                 {/* Optional vision model checkbox */}
                 <div
@@ -393,6 +432,7 @@ export default function OllamaSetup({ onComplete }) {
                 )}
 
                 {error && <ErrorBox text={error} />}
+                {versionWarning && <VersionWarningBox version={versionWarning} />}
 
                 <button
                   onClick={onComplete}
@@ -440,6 +480,28 @@ function ErrorBox({ text }) {
   return (
     <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
       {text}
+    </div>
+  )
+}
+
+function VersionWarningBox({ version }) {
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex flex-col gap-2">
+      <p>
+        <strong>Ollama {version} is installed, but Receipt Scanner (OCR) needs an older version.</strong>{' '}
+        Versions {FIRST_BROKEN_VISION_VERSION}+ break receipt reading — chat still works fine.
+      </p>
+      <a
+        href={PINNED_OLLAMA_INSTALLER}
+        target="_blank"
+        rel="noreferrer"
+        className="font-semibold underline"
+      >
+        Download the compatible version ({PINNED_OLLAMA_VERSION}) →
+      </a>
+      <p className="text-xs text-amber-700">
+        Quit Ollama first (right-click the tray icon → Quit), then run this installer over the existing one. Your models are kept.
+      </p>
     </div>
   )
 }

@@ -6,7 +6,7 @@
  * - Production:  uses bundled embeddable Python + built dist/
  */
 
-const { app, BrowserWindow, dialog } = require('electron')
+const { app, BrowserWindow, dialog, shell } = require('electron')
 const path = require('path')
 const { spawn, exec } = require('child_process')
 const http = require('http')
@@ -85,6 +85,15 @@ function createMainWindow() {
       path.join(__dirname, '../dist/index.html')
     )
   }
+
+  // Any window.open() from the renderer (e.g. the Ollama download button in
+  // OllamaSetup.jsx) should open in the user's actual default browser, not
+  // spawn a bare Electron window — Electron's default handler does the latter,
+  // which breaks the expected "see it download in your browser" experience.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
 
   // Loaded pages can overwrite BrowserWindow title (e.g. stale dist/index.html).
   mainWindow.on('page-title-updated', (event) => {
