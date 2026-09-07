@@ -21,6 +21,7 @@ Connections:
 
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
+import json
 from backend.app.database import get_db
 from backend.app.models.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse
 from backend.app.logger import get_logger
@@ -73,6 +74,16 @@ def create_expense(expense: ExpenseCreate):
         cursor = conn.cursor()
         now = datetime.utcnow().isoformat()
 
+        # If this expense came from an uploaded receipt, pull the file path
+        # so receipt_path is populated even if the caller didn't send one.
+        receipt_path = expense.receipt_path
+        if expense.document_id and not receipt_path:
+            doc_row = conn.execute(
+                "SELECT file_path FROM documents WHERE id = ?", (expense.document_id,)
+            ).fetchone()
+            if doc_row:
+                receipt_path = doc_row["file_path"]
+
         cursor.execute("""
             INSERT INTO expenses
                 (business_id, date, vendor, amount, category,
@@ -90,7 +101,7 @@ def create_expense(expense: ExpenseCreate):
             1 if expense.deductible else 0,
             expense.confidence,
             1 if expense.needs_review else 0,
-            expense.receipt_path,
+            receipt_path,
             now,
             now
         ))
@@ -98,6 +109,16 @@ def create_expense(expense: ExpenseCreate):
 
         # Fetch the newly created record to return it with its ID
         new_id = cursor.lastrowid
+
+        # Link the uploaded document (if any) to this expense, so the
+        # receipt can be previewed/edited from the Expenses page later.
+        if expense.document_id:
+            cursor.execute(
+                "UPDATE documents SET expense_id = ? WHERE id = ?",
+                (new_id, expense.document_id)
+            )
+            conn.commit()
+
         row = conn.execute(
             "SELECT * FROM expenses WHERE id = ?", (new_id,)
         ).fetchone()
@@ -166,6 +187,38 @@ def get_expense(expense_id: int):
         raise
     except Exception as e:
         logger.error(f"Failed to get expense {expense_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+
+@router.get("/{expense_id}/document")
+def get_expense_document(expense_id: int):
+    """
+    Return the document (receipt/invoice) linked to this expense, if any.
+    Used by the Expenses page to show a receipt preview/edit icon —
+    the actual file is served via GET /api/documents/{id}/file and
+    edited via PUT /api/documents/{id} (same routes the Documents page uses).
+    """
+    conn = get_db()
+    try:
+        doc = conn.execute(
+            "SELECT * FROM documents WHERE expense_id = ? ORDER BY id DESC LIMIT 1",
+            (expense_id,)
+        ).fetchone()
+        if not doc:
+            raise HTTPException(status_code=404, detail="No document linked to this expense")
+
+        result = dict(doc)
+        try:
+            result["extracted_data"] = json.loads(result.get("extracted_data") or "{}")
+        except Exception:
+            result["extracted_data"] = {}
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get document for expense {expense_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()

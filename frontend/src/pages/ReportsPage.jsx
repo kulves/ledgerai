@@ -63,17 +63,17 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
     if (!activeBusiness) return
     const url = `http://127.0.0.1:8000/api/reports/excel?business_id=${activeBusiness.id}&start_date=${period.start}&end_date=${period.end}`
     window.open(url, '_blank')
-    
   }
+ 
   const categories = report?.by_category || {}
   const catEntries = Object.entries(categories).sort((a, b) => b[1] - a[1])
-  const netProfit = (report?.net_profit || 0)
-  const cashFlow = netProfit  // Will show income - expenses once income is tracked
-  const totalExpenses = report?.total_expenses || 0
-  const totalDeductible  = report?.total_deductible  || 0
+  const netProfit       = report?.net_profit       || 0
+  const cashFlow        = netProfit
+  const totalExpenses   = report?.total_expenses   || 0
+  const totalDeductible = report?.total_deductible || 0
   const mileageDeduction = report?.mileage_deduction || 0
-  const totalDeductions = totalDeductible + mileageDeduction
-  const totalMiles = report?.total_miles || 0
+  const totalDeductions = report?.total_deductions || totalDeductible + mileageDeduction
+  const totalMiles      = report?.total_miles      || 0
  
   const statCards = [
     {
@@ -129,7 +129,6 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
             ))}
           </div>
         )}
- 
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>Period:</span>
           {PERIODS.map(p => (
@@ -158,7 +157,7 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
               <div className="h-8 rounded-lg animate-pulse" style={{ background: 'var(--border)' }} />
             ) : (
               <>
-                <p className="text-2xl font-bold" style={{ color: card.color, letterSpacing: '-0.02em' }}>
+                <p className="text-xl font-bold" style={{ color: card.color, letterSpacing: '-0.02em' }}>
                   {card.value}
                 </p>
                 <p className="text-xs mt-1" style={{ color: 'var(--text-2)' }}>{card.sub}</p>
@@ -171,7 +170,6 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
       {/* Category breakdown */}
       <div className="rounded-2xl overflow-hidden"
         style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
- 
         <div className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid var(--border-soft)' }}>
           <h3 className="font-semibold text-sm" style={{ color: 'var(--text-0)' }}>
@@ -206,25 +204,16 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
               onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              {/* Color dot */}
               <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
- 
-              {/* Category name */}
               <span className="text-sm flex-1 font-medium" style={{ color: 'var(--text-0)' }}>{cat}</span>
- 
-              {/* Progress bar */}
               <div className="w-32 h-1.5 rounded-full overflow-hidden flex-shrink-0"
                 style={{ background: 'var(--border)' }}>
                 <div className="h-full rounded-full transition-all"
                   style={{ width: `${pct}%`, background: color }} />
               </div>
- 
-              {/* Percentage */}
               <span className="text-xs w-10 text-right flex-shrink-0" style={{ color: 'var(--text-2)' }}>
                 {pct.toFixed(1)}%
               </span>
- 
-              {/* Amount */}
               <span className="text-sm font-bold w-24 text-right flex-shrink-0"
                 style={{ color: 'var(--text-0)' }}>
                 {fmt(amount)}
@@ -233,7 +222,6 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
           )
         })}
  
-        {/* Footer totals */}
         {!loading && catEntries.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3"
             style={{ borderTop: '1px solid var(--border-soft)', background: 'var(--card-2)' }}>
@@ -253,26 +241,36 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
         <strong>Disclaimer:</strong> This report is for organizational purposes only. Not tax, financial, or legal advice. Review with your CPA before filing.
       </div>
  
-      {/* Download button */}
-      <button
-        onClick={handleDownload}
-        disabled={downloading || !report}
-        className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all"
-        style={{
-          background: downloaded ? 'rgba(52,211,153,0.15)' : 'var(--card)',
-          border: `1px solid ${downloaded ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`,
-          color: downloaded ? '#34D399' : 'var(--text-0)',
-          opacity: downloading || !report ? 0.5 : 1,
-        }}
-      >
-        {downloading ? 'Generating PDF...' : downloaded ? '✓ PDF Downloaded!' : '↓ Download PDF Report (Free — watermarked)'}
-      </button>
-
-      <button onClick={handleExcel} disabled={!report}
-        className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all"
-        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: '#34D399', opacity: !report ? 0.5 : 1 }}>
-        ↓ Download Excel Report (.xlsx)
-      </button>
+      {/* Download buttons */}
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={handleDownload}
+          disabled={downloading || !report}
+          className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all"
+          style={{
+            background: downloaded ? 'rgba(52,211,153,0.15)' : 'var(--card)',
+            border: `1px solid ${downloaded ? 'rgba(52,211,153,0.4)' : 'var(--border)'}`,
+            color: downloaded ? '#34D399' : 'var(--text-0)',
+            opacity: downloading || !report ? 0.5 : 1,
+          }}
+        >
+          {downloading ? 'Generating PDF...' : downloaded ? '✓ PDF Downloaded!' : '↓ Download PDF Report (Free — watermarked)'}
+        </button>
+ 
+        <button
+          onClick={handleExcel}
+          disabled={!report}
+          className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all"
+          style={{
+            background: 'var(--card)',
+            border: '1px solid rgba(52,211,153,0.3)',
+            color: '#34D399',
+            opacity: !report ? 0.5 : 1,
+          }}
+        >
+          ↓ Download Excel Report (.xlsx)
+        </button>
+      </div>
  
     </div>
   )

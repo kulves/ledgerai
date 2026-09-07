@@ -64,6 +64,25 @@ export const api = {
       };
     }
   },
+
+  async categorizeIncome(source, amount, description = '') {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/luca/categorize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendor: source, amount, description, transaction_type: 'income' })
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('categorizeIncome failed:', error);
+      return {
+        category: 'Other Income', confidence: 'low',
+        deductible: false, notes: error.message,
+        needs_review: true, success: false
+      };
+    }
+  },
  
   // ── Businesses ───────────────────────────────────────────────────────────
   async getBusinesses() {
@@ -257,6 +276,18 @@ export const api = {
   // Not async — just builds the URL the <img>/<iframe> preview points to
   getDocumentFileUrl(docId) {
     return `${API_BASE_URL}/api/documents/${docId}/file`
+  },
+
+  async getExpenseDocument(expenseId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}/document`)
+      if (response.status === 404) return null   // no receipt linked — not an error
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getExpenseDocument failed:', error)
+      return null
+    }
   },
  
   // ── Reports ───────────────────────────────────────────────────────────────

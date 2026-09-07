@@ -50,6 +50,10 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
   const [sortBy, setSortBy] = useState('date')
   const [sortDir, setSortDir] = useState('desc')
   const [search, setSearch] = useState('')
+  const [activeDoc, setActiveDoc] = useState(null)   // linked document open in preview/edit modal
+  const [editForm, setEditForm] = useState(null)
+  const [docSaving, setDocSaving] = useState(false)
+  const [docLoadingFor, setDocLoadingFor] = useState(null)  // expense id currently fetching its receipt
 
   const handleDelete = async (id) => {
     setDeleting(true)
@@ -63,6 +67,39 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
   const handleSort = (col) => {
     if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
     else { setSortBy(col); setSortDir('desc') }
+  }
+
+  const openReceipt = async (expense) => {
+    setDocLoadingFor(expense.id)
+    const doc = await api.getExpenseDocument(expense.id)
+    setDocLoadingFor(null)
+    if (!doc) return   // no document actually linked — nothing to show
+    const ext = doc.extracted_data || {}
+    setActiveDoc(doc)
+    setEditForm({
+      vendor: ext.vendor || '',
+      amount: ext.amount ?? '',
+      date: ext.date || '',
+      description: ext.description || '',
+      doc_type: doc.doc_type || 'receipt',
+    })
+  }
+
+  const closeDoc = () => { setActiveDoc(null); setEditForm(null) }
+
+  const saveDoc = async () => {
+    if (!activeDoc) return
+    setDocSaving(true)
+    const updated = await api.updateDocument(activeDoc.id, {
+      vendor: editForm.vendor || null,
+      amount: editForm.amount === '' ? null : Number(editForm.amount),
+      date: editForm.date || null,
+      description: editForm.description || null,
+      doc_type: editForm.doc_type,
+      reviewed: true,
+    })
+    setDocSaving(false)
+    if (updated) closeDoc()
   }
 
   const filtered = expenses
@@ -222,6 +259,17 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
                       📝
                     </span>
                   )}
+                  {expense.receipt_path && (
+                    <button
+                      title="View receipt"
+                      onClick={() => openReceipt(expense)}
+                      disabled={docLoadingFor === expense.id}
+                      className="flex-shrink-0 text-xs opacity-60 hover:opacity-100"
+                      style={{ color: 'var(--text-2)' }}
+                    >
+                      {docLoadingFor === expense.id ? '…' : '🧾'}
+                    </button>
+                  )}
                 </div>
                 {expense.description && expense.vendor && (
                   <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-2)' }}>
@@ -317,6 +365,120 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
           </div>
         )}
       </div>
+
+      {/* Receipt preview / edit modal */}
+      {activeDoc && editForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={closeDoc}
+        >
+          <div
+            className="w-full max-w-4xl max-h-[85vh] rounded-2xl overflow-hidden flex flex-col md:flex-row"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Preview pane */}
+            <div className="flex-1 min-w-0 flex items-center justify-center p-4 overflow-auto"
+              style={{ background: 'var(--card-2)', borderRight: '1px solid var(--border)' }}>
+              {activeDoc.filename?.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={api.getDocumentFileUrl(activeDoc.id)}
+                  title={activeDoc.filename}
+                  className="w-full h-full rounded-lg"
+                  style={{ minHeight: '60vh', border: 'none' }}
+                />
+              ) : (
+                <img
+                  src={api.getDocumentFileUrl(activeDoc.id)}
+                  alt={activeDoc.filename}
+                  className="max-w-full max-h-[70vh] rounded-lg object-contain"
+                />
+              )}
+            </div>
+
+            {/* Edit pane */}
+            <div className="w-full md:w-80 flex-shrink-0 flex flex-col p-5 gap-4 overflow-y-auto">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-0)' }}>
+                    {activeDoc.filename}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
+                    Receipt for this expense
+                  </p>
+                </div>
+                <button onClick={closeDoc} className="text-lg leading-none opacity-50 hover:opacity-100 flex-shrink-0"
+                  style={{ color: 'var(--text-1)' }}>×</button>
+              </div>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Vendor
+                <input value={editForm.vendor}
+                  onChange={e => setEditForm({ ...editForm, vendor: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Amount
+                <input type="number" step="0.01" value={editForm.amount}
+                  onChange={e => setEditForm({ ...editForm, amount: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Date
+                <input type="date" value={editForm.date}
+                  onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Type
+                <select value={editForm.doc_type}
+                  onChange={e => setEditForm({ ...editForm, doc_type: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}>
+                  <option value="receipt">Receipt</option>
+                  <option value="invoice">Invoice</option>
+                  <option value="bank_statement">Bank statement</option>
+                  <option value="1099">1099</option>
+                  <option value="W2">W2</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Description
+                <textarea rows={2} value={editForm.description}
+                  onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none resize-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+
+              <p className="text-xs -mt-1" style={{ color: 'var(--text-2)' }}>
+                Editing here updates the receipt record only — it won't change the amount/vendor already logged on this expense.
+              </p>
+
+              <div className="flex gap-2 mt-auto pt-2">
+                <button onClick={closeDoc}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                  Cancel
+                </button>
+                <button onClick={saveDoc} disabled={docSaving}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                  style={{ background: 'var(--accent)', color: '#04141a', opacity: docSaving ? 0.6 : 1 }}>
+                  {docSaving ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

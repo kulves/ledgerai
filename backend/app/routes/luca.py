@@ -284,6 +284,7 @@ class CategorizeRequest(BaseModel):
     vendor: str
     amount: float
     description: str = ""
+    transaction_type: str = "expense"   # "expense" or "income" — picks which prompt/category set to use
 
 
 class CategorizeResponse(BaseModel):
@@ -298,12 +299,14 @@ class CategorizeResponse(BaseModel):
 @router.post("/categorize", response_model=CategorizeResponse)
 async def categorize_expense(request: CategorizeRequest) -> CategorizeResponse:
     """
-    Ask Luca to suggest an IRS category for an expense.
-    Uses the categorize.txt prompt — returns structured JSON.
+    Ask Luca to suggest a category for an expense or income transaction.
+    transaction_type="expense" (default) uses categorize.txt (IRS expense categories).
+    transaction_type="income" uses categorize_income.txt (income source categories).
     """
-    logger.info(f"Categorize request: {request.vendor} ${request.amount}")
+    logger.info(f"Categorize request ({request.transaction_type}): {request.vendor} ${request.amount}")
 
-    categorize_prompt = load_prompt("categorize.txt")
+    prompt_file = "categorize_income.txt" if request.transaction_type == "income" else "categorize.txt"
+    categorize_prompt = load_prompt(prompt_file)
 
     user_message = (
         f"Vendor: {request.vendor}\n"
@@ -316,13 +319,15 @@ async def categorize_expense(request: CategorizeRequest) -> CategorizeResponse:
         system_prompt=categorize_prompt
     )
 
+    fallback_category = "Other Income" if request.transaction_type == "income" else "Uncategorized"
+
     if not result["success"]:
         logger.error(f"Categorization failed: {result['error']}")
         return CategorizeResponse(
-            category="Uncategorized",
+            category=fallback_category,
             confidence="low",
             deductible=False,
-            notes="Luca could not categorize this expense. Please categorize manually.",
+            notes="Luca could not categorize this transaction. Please categorize manually.",
             needs_review=True,
             success=False
         )
@@ -346,7 +351,7 @@ async def categorize_expense(request: CategorizeRequest) -> CategorizeResponse:
         logger.error(f"Failed to parse categorization JSON: {e} | raw: {raw}")
 
     return CategorizeResponse(
-        category="Uncategorized",
+        category=fallback_category,
         confidence="low",
         deductible=False,
         notes="Could not parse Luca's response. Please categorize manually.",

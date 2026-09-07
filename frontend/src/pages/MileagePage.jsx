@@ -52,6 +52,8 @@ export default function MileagePage({ backendStatus, selectedBusiness: propBusin
   const [message, setMessage] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [showForm, setShowForm] = useState(false)
+  const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState('all')
 
   useEffect(() => {
     if (!propBusinesses?.length) api.getBusinesses().then(d => { if (d?.length) { setBusinesses(d); if (!activeBusiness) setActiveBusiness(d[0]) } })
@@ -104,6 +106,14 @@ export default function MileagePage({ backendStatus, selectedBusiness: propBusin
   const totalDeduction = trips.reduce((s, t) => s + (t.deduction || (t.miles * (RATES[t.trip_type] || 0))), 0)
   const businessMiles = trips.filter(t => t.trip_type === 'business').reduce((s, t) => s + (t.miles || 0), 0)
   const businessDeduction = businessMiles * RATES.business
+
+  const filteredTrips = trips.filter(trip => {
+    if (typeFilter !== 'all' && trip.trip_type !== typeFilter) return false
+    if (!search) return true
+    return trip.purpose?.toLowerCase().includes(search.toLowerCase())
+  })
+  const filteredMiles = filteredTrips.reduce((s, t) => s + (t.miles || 0), 0)
+  const filteredDeduction = filteredTrips.reduce((s, t) => s + (t.deduction || (t.miles * (RATES[t.trip_type] || 0))), 0)
 
   const statCards = [
     { label: 'Total Miles', value: totalMiles.toFixed(1), sub: 'All trip types', color: '#22D3EE' },
@@ -227,6 +237,22 @@ export default function MileagePage({ backendStatus, selectedBusiness: propBusin
         </form>
       )}
 
+      {/* Search + type filter */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <input type="text" placeholder="Search trips by purpose..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full rounded-lg pl-3 pr-3 py-2 text-sm outline-none"
+            style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+        </div>
+        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
+          className="rounded-lg px-3 py-2 text-sm outline-none"
+          style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+          <option value="all">All trip types</option>
+          {Object.entries(TRIP_LABELS).map(([val, lbl]) => <option key={val} value={val}>{lbl}</option>)}
+        </select>
+      </div>
+
       {/* Trips table */}
       <div className="rounded-2xl overflow-hidden"
         style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
@@ -246,14 +272,16 @@ export default function MileagePage({ backendStatus, selectedBusiness: propBusin
           <span />
         </div>
 
-        {trips.length === 0 && (
+        {filteredTrips.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-12">
             <span className="text-3xl">🚗</span>
-            <p className="text-sm" style={{ color: 'var(--text-2)' }}>No trips logged yet</p>
+            <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+              {trips.length === 0 ? 'No trips logged yet' : 'No trips match your search'}
+            </p>
           </div>
         )}
 
-        {trips.map((trip, i) => {
+        {filteredTrips.map((trip, i) => {
           const color = TRIP_COLORS[trip.trip_type] || '#64748B'
           const deduction = trip.deduction || (trip.miles * (RATES[trip.trip_type] || 0))
           return (
@@ -305,10 +333,10 @@ export default function MileagePage({ backendStatus, selectedBusiness: propBusin
           <div className="flex items-center justify-between px-5 py-3"
             style={{ borderTop: '1px solid var(--border-soft)', background: 'var(--card-2)' }}>
             <span className="text-xs" style={{ color: 'var(--text-2)' }}>
-              {trips.length} trip{trips.length !== 1 ? 's' : ''} · {totalMiles.toFixed(1)} total miles
+              {filteredTrips.length} of {trips.length} trip{trips.length !== 1 ? 's' : ''} · {filteredMiles.toFixed(1)} miles shown
             </span>
             <span className="text-xs" style={{ color: 'var(--text-2)' }}>
-              Total deduction: <strong style={{ color: '#34D399' }}>{fmt(totalDeduction)}</strong>
+              Deduction shown: <strong style={{ color: '#34D399' }}>{fmt(filteredDeduction)}</strong>
             </span>
           </div>
         )}
