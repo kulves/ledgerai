@@ -213,6 +213,7 @@ def init_db() -> None:
  
     # ── Migrations (safe to re-run — only adds a column if missing) ────────
     _add_column_if_missing(conn, "expenses", "notes", "TEXT DEFAULT ''")
+    _add_column_if_missing(conn, "expenses", "split_group", "TEXT DEFAULT NULL")
  
     conn.commit()
     conn.close()

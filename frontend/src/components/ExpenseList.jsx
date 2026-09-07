@@ -54,6 +54,10 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
   const [editForm, setEditForm] = useState(null)
   const [docSaving, setDocSaving] = useState(false)
   const [docLoadingFor, setDocLoadingFor] = useState(null)  // expense id currently fetching its receipt
+  const [splitTarget, setSplitTarget] = useState(null)   // expense being split
+  const [splitRows, setSplitRows] = useState([])          // [{ category, amount, description, deductible }]
+  const [splitSaving, setSplitSaving] = useState(false)
+  const [splitError, setSplitError] = useState('')
 
   const handleDelete = async (id) => {
     setDeleting(true)
@@ -100,6 +104,52 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
     })
     setDocSaving(false)
     if (updated) closeDoc()
+  }
+
+  const openSplit = (expense) => {
+    setSplitTarget(expense)
+    setSplitError('')
+    // Start with two rows: half the category/description carried over, remainder blank
+    setSplitRows([
+      { category: expense.category || '', amount: '', description: expense.description || '', deductible: expense.deductible !== false },
+      { category: '', amount: '', description: '', deductible: expense.deductible !== false },
+    ])
+  }
+
+  const closeSplit = () => { setSplitTarget(null); setSplitRows([]); setSplitError('') }
+
+  const addSplitRow = () => setSplitRows(rows => [...rows, { category: '', amount: '', description: '', deductible: true }])
+  const removeSplitRow = (idx) => setSplitRows(rows => rows.filter((_, i) => i !== idx))
+  const updateSplitRow = (idx, patch) => setSplitRows(rows => rows.map((r, i) => i === idx ? { ...r, ...patch } : r))
+
+  const splitRowsTotal = splitRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0)
+  const splitRemaining = splitTarget ? Math.round((splitTarget.amount - splitRowsTotal) * 100) / 100 : 0
+
+  const saveSplit = async () => {
+    setSplitError('')
+    if (splitRows.length < 2) { setSplitError('Need at least 2 line items to split.'); return }
+    if (splitRows.some(r => !r.category || !r.amount || parseFloat(r.amount) <= 0)) {
+      setSplitError('Every line item needs a category and a positive amount.')
+      return
+    }
+    if (Math.abs(splitRemaining) > 0.01) {
+      setSplitError(`Amounts must add up to ${fmt(splitTarget.amount)} — currently ${splitRemaining > 0 ? 'short' : 'over'} by ${fmt(Math.abs(splitRemaining))}.`)
+      return
+    }
+    setSplitSaving(true)
+    const result = await api.splitExpense(splitTarget.id, splitRows.map(r => ({
+      category: r.category,
+      amount: parseFloat(r.amount),
+      description: r.description || null,
+      deductible: r.deductible,
+    })))
+    setSplitSaving(false)
+    if (result?.error) {
+      setSplitError(result.error)
+      return
+    }
+    closeSplit()
+    onRefresh?.()
   }
 
   const filtered = expenses
@@ -268,6 +318,24 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
                       style={{ color: 'var(--text-2)' }}
                     >
                       {docLoadingFor === expense.id ? '…' : '🧾'}
+                    </button>
+                  )}
+                  {expense.split_group ? (
+                    <span
+                      title="This is part of a split transaction"
+                      className="flex-shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded"
+                      style={{ background: 'rgba(167,139,250,0.15)', color: '#A78BFA' }}
+                    >
+                      split
+                    </span>
+                  ) : (
+                    <button
+                      title="Split this expense across categories"
+                      onClick={() => openSplit(expense)}
+                      className="flex-shrink-0 text-xs opacity-40 hover:opacity-90"
+                      style={{ color: 'var(--text-2)' }}
+                    >
+                      ✂️
                     </button>
                   )}
                 </div>
@@ -475,6 +543,94 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
                   {docSaving ? 'Saving…' : 'Save'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Split expense modal */}
+      {splitTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={closeSplit}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl overflow-hidden flex flex-col max-h-[85vh]"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2 px-5 py-4" style={{ borderBottom: '1px solid var(--border-soft)' }}>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-0)' }}>
+                  Split {splitTarget.description || splitTarget.vendor}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
+                  Total: {fmt(splitTarget.amount)} · divide across categories
+                </p>
+              </div>
+              <button onClick={closeSplit} className="text-lg leading-none opacity-50 hover:opacity-100 flex-shrink-0"
+                style={{ color: 'var(--text-1)' }}>×</button>
+            </div>
+
+            <div className="flex flex-col gap-3 px-5 py-4 overflow-y-auto">
+              {splitRows.map((row, idx) => (
+                <div key={idx} className="rounded-xl p-3 flex flex-col gap-2"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)' }}>
+                  <div className="flex items-center gap-2">
+                    <select value={row.category}
+                      onChange={e => updateSplitRow(idx, { category: e.target.value })}
+                      className="flex-1 min-w-0 rounded-lg px-2 py-1.5 text-xs outline-none"
+                      style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }}>
+                      <option value="">Category…</option>
+                      {Object.keys(CATEGORY_COLORS).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <input type="number" step="0.01" placeholder="0.00" value={row.amount}
+                      onChange={e => updateSplitRow(idx, { amount: e.target.value })}
+                      className="w-24 rounded-lg px-2 py-1.5 text-xs outline-none text-right"
+                      style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+                    {splitRows.length > 2 && (
+                      <button onClick={() => removeSplitRow(idx)}
+                        className="text-base leading-none opacity-40 hover:opacity-90 flex-shrink-0"
+                        style={{ color: 'var(--red)' }}>×</button>
+                    )}
+                  </div>
+                  <input type="text" placeholder="Description (optional)" value={row.description}
+                    onChange={e => updateSplitRow(idx, { description: e.target.value })}
+                    className="rounded-lg px-2 py-1.5 text-xs outline-none"
+                    style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+                </div>
+              ))}
+
+              <button onClick={addSplitRow}
+                className="text-xs font-semibold text-left py-1"
+                style={{ color: 'var(--accent)' }}>
+                + Add another line item
+              </button>
+
+              <div className="flex items-center justify-between text-xs pt-1" style={{ borderTop: '1px solid var(--border-soft)' }}>
+                <span style={{ color: 'var(--text-2)' }}>Assigned: {fmt(splitRowsTotal)}</span>
+                <span style={{ color: Math.abs(splitRemaining) < 0.01 ? '#34D399' : 'var(--red)' }}>
+                  {Math.abs(splitRemaining) < 0.01 ? '✓ Matches total' : `Remaining: ${fmt(splitRemaining)}`}
+                </span>
+              </div>
+
+              {splitError && (
+                <p className="text-xs" style={{ color: 'var(--red)' }}>{splitError}</p>
+              )}
+            </div>
+
+            <div className="flex gap-2 px-5 py-4" style={{ borderTop: '1px solid var(--border-soft)' }}>
+              <button onClick={closeSplit}
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                Cancel
+              </button>
+              <button onClick={saveSplit} disabled={splitSaving}
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                style={{ background: 'var(--accent)', color: '#04141a', opacity: splitSaving ? 0.6 : 1 }}>
+                {splitSaving ? 'Splitting…' : 'Split Expense'}
+              </button>
             </div>
           </div>
         </div>

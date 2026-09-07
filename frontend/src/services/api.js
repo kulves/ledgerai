@@ -153,6 +153,24 @@ export const api = {
       return null;
     }
   },
+
+  async splitExpense(expenseId, splits) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}/split`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ splits })
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || `Backend error: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('splitExpense failed:', error);
+      return { error: error.message };
+    }
+  },
  
   // ── Mileage ──────────────────────────────────────────────────────────────
   async getMileageTrips(businessId = null) {

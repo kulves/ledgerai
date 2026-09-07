@@ -30,6 +30,7 @@ class ExpenseBase(BaseModel):
     confidence:   str             = Field("high", description="Categorization confidence: high/medium/low")
     needs_review: bool            = Field(False, description="Flag for manual review")
     receipt_path: Optional[str]   = Field(None, description="Path to uploaded receipt file")
+    split_group:  Optional[str]   = Field(None, description="Shared id linking rows created by splitting one expense; null if not split")
 
 
 class ExpenseCreate(ExpenseBase):
@@ -75,3 +76,16 @@ class ExpenseResponse(ExpenseBase):
         # Allows Pydantic to read data from sqlite3.Row objects
         # (which behave like dicts but aren't exactly dicts)
         from_attributes = True
+
+
+class ExpenseSplitItem(BaseModel):
+    """One line item within a split — amounts across all items must sum to the original expense's amount."""
+    category:    str            = Field(..., description="Category for this portion")
+    amount:      float          = Field(..., gt=0, description="Amount for this portion (must be positive)")
+    description: Optional[str]  = Field(None, description="Optional description for this portion")
+    deductible:  bool           = Field(True, description="Is this portion tax deductible?")
+
+
+class ExpenseSplitRequest(BaseModel):
+    """Body for POST /api/expenses/{id}/split — at least 2 line items required."""
+    splits: list[ExpenseSplitItem] = Field(..., min_length=2, description="The line items to split this expense into")

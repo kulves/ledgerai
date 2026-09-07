@@ -22,8 +22,9 @@ Connections:
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 import json
+import uuid
 from backend.app.database import get_db
-from backend.app.models.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse
+from backend.app.models.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse, ExpenseSplitRequest
 from backend.app.logger import get_logger
 
 logger = get_logger()
@@ -298,6 +299,96 @@ def delete_expense(expense_id: int):
     except Exception as e:
         conn.rollback()
         logger.error(f"Failed to delete expense {expense_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+
+@router.post("/{expense_id}/split", response_model=list[ExpenseResponse])
+def split_expense(expense_id: int, request: ExpenseSplitRequest):
+    """
+    Split one expense into multiple line items, each with its own
+    category/amount/description. The split amounts must sum to the
+    original expense's amount (within a cent, for float rounding).
+
+    Implementation: the original row is replaced by N new expense rows
+    that share the same date/vendor/receipt/notes and carry a common
+    split_group id. If a receipt document was linked to the original,
+    it's re-linked to the first new row so it stays previewable.
+    The original row is deleted — reports/dashboards need no changes
+    since they already just sum `expenses.amount`.
+    """
+    requested_total = round(sum(s.amount for s in request.splits), 2)
+
+    conn = get_db()
+    try:
+        original = conn.execute("SELECT * FROM expenses WHERE id = ?", (expense_id,)).fetchone()
+        if not original:
+            raise HTTPException(status_code=404, detail=f"Expense {expense_id} not found")
+        original = dict(original)
+
+        if original.get("split_group"):
+            raise HTTPException(status_code=400, detail="This expense has already been split.")
+
+        original_total = round(float(original["amount"]), 2)
+        if abs(requested_total - original_total) > 0.01:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Split amounts (${requested_total:.2f}) must add up to the original amount (${original_total:.2f})."
+            )
+
+        split_group = f"split-{expense_id}-{uuid.uuid4().hex[:8]}"
+        now = datetime.utcnow().isoformat()
+        cursor = conn.cursor()
+
+        new_ids = []
+        for item in request.splits:
+            cursor.execute("""
+                INSERT INTO expenses
+                    (business_id, date, vendor, amount, category,
+                     description, notes, deductible, confidence, needs_review,
+                     receipt_path, split_group, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                original["business_id"],
+                original["date"],
+                original["vendor"],
+                round(item.amount, 2),
+                item.category,
+                item.description,
+                original.get("notes"),
+                1 if item.deductible else 0,
+                "high",       # user-specified split — treat as confirmed, not a guess
+                0,
+                original.get("receipt_path"),
+                split_group,
+                now,
+                now,
+            ))
+            new_ids.append(cursor.lastrowid)
+
+        # Re-link any receipt document from the original row to the first split
+        conn.execute(
+            "UPDATE documents SET expense_id = ? WHERE expense_id = ?",
+            (new_ids[0], expense_id)
+        )
+
+        conn.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+        conn.commit()
+
+        rows = conn.execute(
+            f"SELECT * FROM expenses WHERE id IN ({','.join('?' * len(new_ids))}) ORDER BY id",
+            new_ids
+        ).fetchall()
+
+        logger.info(f"Expense {expense_id} split into {len(new_ids)} rows (group {split_group})")
+        return [dict(r) for r in rows]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        logger.error(f"Failed to split expense {expense_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
