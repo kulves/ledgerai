@@ -27,25 +27,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../services/api'
 import ExpenseList from '../components/ExpenseList'
- 
-const CATEGORIES = [
-  'Advertising & Marketing','Banking & Financial Fees','Business Insurance',
-  'Business Meals (50% deductible)','Business Travel','Contract Labor / Freelancers',
-  'Education & Training','Equipment & Hardware','Home Office',
-  'Legal & Professional Services','Mileage & Vehicle','Office Supplies',
-  'Phone & Internet','Rent & Lease','Repairs & Maintenance',
-  'Software & Subscriptions','Taxes & Licenses','Utilities','Other Business Expense',
-]
- 
-const CATEGORY_COLORS = {
-  'Advertising & Marketing': '#22D3EE',
-  'Business Meals (50% deductible)': '#34D399',
-  'Business Travel': '#A78BFA',
-  'Equipment & Hardware': '#FBBF24',
-  'Software & Subscriptions': '#60A5FA',
-  'Office Supplies': '#F97316',
-  'Other Business Expense': '#94A3B8',
-}
+import { EXPENSE_CATEGORIES as CATEGORIES, CATEGORY_COLORS, categoryColor } from '../constants/categories'
  
 function today() {
   return new Date().toISOString().split('T')[0]
@@ -200,7 +182,7 @@ export default function ExpensesPage({ backendStatus, selectedBusiness, onSelect
     }
   }
  
-  const catColor = (cat) => CATEGORY_COLORS[cat] || '#94A3B8'
+  const catColor = (cat) => categoryColor(cat)
  
   return (
     <div className="flex flex-col gap-6 p-6" style={{ minHeight: '100%' }}>

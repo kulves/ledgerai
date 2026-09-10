@@ -79,6 +79,58 @@ def _add_column_if_missing(conn: sqlite3.Connection, table: str, column: str, co
         logger.info(f"Migration: added column '{column}' to '{table}'")
  
  
+# Earlier app versions had two other, different expense category name sets
+# (one in ExpensesPage.jsx's manual-entry form, one in ExpenseList.jsx's
+# color map) before everything was unified onto one canonical list in
+# frontend/src/constants/categories.js. Any expense saved under the old
+# names no longer matches anything in the canonical list -- which is why
+# the dashboard pie chart showed most categories as grey (color lookup
+# by name failed) and why report category filtering would silently miss
+# that older data. This maps old names to their canonical equivalent.
+LEGACY_CATEGORY_MAP = {
+    "Advertising & Marketing":         "Marketing & Advertising",
+    "Banking & Financial Fees":        "Banking & Finance",
+    "Business Insurance":              "Insurance",
+    "Business Meals (50% deductible)": "Meals & Entertainment",
+    "Business Travel":                 "Travel & Mileage",
+    "Contract Labor / Freelancers":    "Payroll & Labor",
+    "Education & Training":            "Education & Development",
+    "Equipment & Hardware":            "Equipment & Assets",
+    "Legal & Professional Services":   "Professional Services",
+    "Mileage & Vehicle":               "Travel & Mileage",
+    "Phone & Internet":                "Utilities & Facilities",
+    "Rent & Lease":                    "Utilities & Facilities",
+    "Repairs & Maintenance":           "Equipment & Assets",
+    "Taxes & Licenses":                "Banking & Finance",
+    "Utilities":                       "Utilities & Facilities",
+    "Other Business Expense":          "Uncategorized",
+    # "Office Supplies", "Home Office", "Software & Subscriptions", and
+    # "Uncategorized" were already spelled identically in every version --
+    # no mapping needed for those.
+}
+
+
+def _normalize_legacy_categories(conn: sqlite3.Connection) -> None:
+    """
+    One-time (but safe to re-run) cleanup: rewrite any expense rows still
+    using a pre-unification category name to the current canonical name.
+    Idempotent -- after the first run, no rows match the old names, so
+    every later call is just a handful of no-op UPDATEs.
+    """
+    cursor = conn.cursor()
+    total_updated = 0
+    for old_name, new_name in LEGACY_CATEGORY_MAP.items():
+        cursor.execute(
+            "UPDATE expenses SET category = ? WHERE category = ?",
+            (new_name, old_name)
+        )
+        if cursor.rowcount:
+            total_updated += cursor.rowcount
+            logger.info(f"Migration: renamed {cursor.rowcount} expense(s) from \'{old_name}\' to \'{new_name}\'")
+    if total_updated:
+        logger.info(f"Migration: normalized {total_updated} expense(s) to current category names")
+
+
 def init_db() -> None:
     """
     Create all database tables if they don't exist yet.
@@ -214,6 +266,7 @@ def init_db() -> None:
     # ── Migrations (safe to re-run — only adds a column if missing) ────────
     _add_column_if_missing(conn, "expenses", "notes", "TEXT DEFAULT ''")
     _add_column_if_missing(conn, "expenses", "split_group", "TEXT DEFAULT NULL")
+    _normalize_legacy_categories(conn)
  
     conn.commit()
     conn.close()

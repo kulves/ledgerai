@@ -53,7 +53,14 @@ RED   = colors.HexColor("#E11D48")
 WHITE = colors.white
 
 
-def get_report_data(business_id: int, start_date: str, end_date: str) -> dict:
+def get_report_data(business_id: int, start_date: str, end_date: str, exclude_categories: list[str] = None) -> dict:
+    exclude_categories = [c for c in (exclude_categories or []) if c]
+    cat_filter_sql = ""
+    cat_filter_params = []
+    if exclude_categories:
+        cat_filter_sql = f" AND category NOT IN ({','.join('?' * len(exclude_categories))})"
+        cat_filter_params = exclude_categories
+
     conn = get_db()
     try:
         business = conn.execute(
@@ -62,15 +69,15 @@ def get_report_data(business_id: int, start_date: str, end_date: str) -> dict:
         if not business:
             raise HTTPException(status_code=404, detail=f"Business {business_id} not found")
 
-        # Expenses
-        expenses = conn.execute("""
+        # Expenses — exclude_categories applies here (e.g. skip Uncategorized/Personal in reports)
+        expenses = conn.execute(f"""
             SELECT * FROM expenses
-            WHERE business_id = ? AND date BETWEEN ? AND ?
+            WHERE business_id = ? AND date BETWEEN ? AND ?{cat_filter_sql}
             ORDER BY date ASC
-        """, (business_id, start_date, end_date)).fetchall()
+        """, (business_id, start_date, end_date, *cat_filter_params)).fetchall()
         expenses_list = [dict(e) for e in expenses]
 
-        category_totals = conn.execute("""
+        category_totals = conn.execute(f"""
             SELECT category, COUNT(*) AS count,
                    SUM(amount) AS total,
                    SUM(CASE
@@ -79,9 +86,9 @@ def get_report_data(business_id: int, start_date: str, end_date: str) -> dict:
                     ELSE 0
                     END) AS deductible_total
             FROM expenses
-            WHERE business_id = ? AND date BETWEEN ? AND ?
+            WHERE business_id = ? AND date BETWEEN ? AND ?{cat_filter_sql}
             GROUP BY category ORDER BY total DESC
-        """, (business_id, start_date, end_date)).fetchall()
+        """, (business_id, start_date, end_date, *cat_filter_params)).fetchall()
 
         # Mileage
         mileage = conn.execute("""
@@ -141,6 +148,7 @@ def get_report_data(business_id: int, start_date: str, end_date: str) -> dict:
             "period":            {"start": start_date, "end": end_date},
             "expenses":          expenses_list,
             "category_totals":   [dict(c) for c in category_totals],
+            "excluded_categories": exclude_categories,
             "mileage":           mileage_list,
             "mileage_totals":    [dict(m) for m in mileage_totals],
             "income":            income_list,
@@ -165,18 +173,20 @@ def get_report_data(business_id: int, start_date: str, end_date: str) -> dict:
 
 
 @router.get("/summary")
-def get_summary(business_id: int, start_date: str = None, end_date: str = None):
+def get_summary(business_id: int, start_date: str = None, end_date: str = None, exclude_categories: str = ""):
     if not start_date: start_date = f"{date.today().year}-01-01"
     if not end_date:   end_date   = date.today().isoformat()
-    logger.info(f"Summary: business {business_id}, {start_date} to {end_date}")
+    excluded = [c.strip() for c in exclude_categories.split(",") if c.strip()]
+    logger.info(f"Summary: business {business_id}, {start_date} to {end_date}, excluding {excluded}")
     try:
-        data = get_report_data(business_id, start_date, end_date)
+        data = get_report_data(business_id, start_date, end_date, exclude_categories=excluded)
         # Flatten for frontend compatibility
         flat = {
             **data["summary"],
             "by_category":    {c["category"]: c["total"] for c in data["category_totals"]},
             "mileage_deduction": data["summary"]["total_mileage_deduction"],
             "total_miles":       data["summary"]["total_miles"],
+            "excluded_categories": data["excluded_categories"],
         }
         return flat
     except HTTPException: raise
@@ -190,12 +200,14 @@ def download_pdf(
     business_id: int,
     start_date: str = None,
     end_date: str = None,
-    watermark: bool = True
+    watermark: bool = True,
+    exclude_categories: str = ""
 ):
     if not start_date: start_date = f"{date.today().year}-01-01"
     if not end_date:   end_date   = date.today().isoformat()
+    excluded = [c.strip() for c in exclude_categories.split(",") if c.strip()]
     try:
-        data = get_report_data(business_id, start_date, end_date)
+        data = get_report_data(business_id, start_date, end_date, exclude_categories=excluded)
         pdf_bytes = build_pdf(data, watermark=watermark)
         filename = (
             f"LedgerAI_Report_{data['business']['name'].replace(' ','_')}"
@@ -216,16 +228,18 @@ def download_excel(
     business_id: int,
     start_date: str = None,
     end_date: str = None,
+    exclude_categories: str = "",
 ):
     """Generate and return an Excel (.xlsx) report."""
     if not start_date: start_date = f"{date.today().year}-01-01"
     if not end_date:   end_date   = date.today().isoformat()
+    excluded = [c.strip() for c in exclude_categories.split(",") if c.strip()]
     try:
         import openpyxl
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
         from openpyxl.utils import get_column_letter
 
-        data = get_report_data(business_id, start_date, end_date)
+        data = get_report_data(business_id, start_date, end_date, exclude_categories=excluded)
         wb = openpyxl.Workbook()
 
         NAVY_HEX  = "0C2340"

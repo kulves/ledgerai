@@ -25,32 +25,10 @@ import {
   LineElement, ArcElement, Tooltip, Legend, Filler
 } from 'chart.js'
 import { Line, Doughnut } from 'react-chartjs-2'
+import { CATEGORY_COLORS, categoryColor } from '../constants/categories'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler)
 
-// Unique color per category — no duplicates
-const CATEGORY_COLORS = {
-  'Advertising & Marketing':         '#22D3EE',
-  'Banking & Financial Fees':        '#60A5FA',
-  'Business Insurance':              '#A78BFA',
-  'Business Meals (50% deductible)': '#F97316',
-  'Business Travel':                 '#FBBF24',
-  'Contract Labor / Freelancers':    '#E879F9',
-  'Education & Training':            '#34D399',
-  'Equipment & Hardware':            '#FB923C',
-  'Home Office':                     '#4ADE80',
-  'Legal & Professional Services':   '#818CF8',
-  'Mileage & Vehicle':               '#38BDF8',
-  'Office Supplies':                 '#67E8F9',
-  'Phone & Internet':                '#86EFAC',
-  'Rent & Lease':                    '#F43F5E',
-  'Repairs & Maintenance':           '#FDE68A',
-  'Software & Subscriptions':        '#C084FC',
-  'Taxes & Licenses':                '#FB7185',
-  'Utilities':                       '#94A3B8',
-  'Other Business Expense':          '#64748B',
-  'Uncategorized':                   '#475569',
-}
 const COLOR_LIST = Object.values(CATEGORY_COLORS)
 
 const fmt = n => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n || 0)
@@ -157,7 +135,7 @@ export default function DashboardPage({ selectedBusiness, onSelectBusiness, busi
         labels: sorted.map(([k]) => k),
         datasets: [{
           data: sorted.map(([, v]) => v),
-          backgroundColor: sorted.map(([k]) => CATEGORY_COLORS[k] || '#64748B'),
+          backgroundColor: sorted.map(([k]) => categoryColor(k)),
           borderWidth: 0, hoverOffset: 6,
         }]
       }
@@ -444,7 +422,7 @@ export default function DashboardPage({ selectedBusiness, onSelectBusiness, busi
           </div>
         ) : (
           recentExpenses.map((e, i) => {
-            const color = CATEGORY_COLORS[e.category] || '#64748B'
+            const color = categoryColor(e.category)
             return (
               <div key={e.id || i}
                 className="flex items-center gap-4 px-5 py-3.5 transition-all"

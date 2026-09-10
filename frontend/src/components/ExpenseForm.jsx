@@ -15,14 +15,7 @@ import { useState } from 'react'
 import { api } from '../services/api'
 
 // IRS categories — matches categorize.txt prompt
-const CATEGORIES = [
-  'Office Supplies', 'Travel & Mileage', 'Meals & Entertainment',
-  'Professional Services', 'Software & Subscriptions', 'Marketing & Advertising',
-  'Medical & Health', 'Home Office', 'Equipment & Assets',
-  'Utilities & Facilities', 'Payroll & Labor', 'Insurance',
-  'Banking & Finance', 'Education & Development', 'Retirement Contributions',
-  'Personal (not deductible)', 'Uncategorized'
-]
+import { EXPENSE_CATEGORIES as CATEGORIES } from '../constants/categories'
 
 const CONFIDENCE_COLORS = {
   high:   'text-emerald-600 bg-emerald-50 border-emerald-200',

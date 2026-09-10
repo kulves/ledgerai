@@ -22,6 +22,7 @@
 
 import { useState, useEffect } from 'react'
 import { api } from '../services/api'
+import { EXPENSE_CATEGORIES } from '../constants/categories'
  
 const CONFIDENCE_STYLE = {
   high:   { bg: 'rgba(52,211,153,0.1)',  color: '#34D399', label: 'High' },
@@ -72,13 +73,19 @@ export default function DocumentsPage({ backendStatus, selectedBusiness: propBus
     loadDocuments()
   }
  
-  const openDoc = doc => {
+  const openDoc = async doc => {
     const ext = doc.extracted_data || {}
     setActiveDoc(doc)
+    let category = ''
+    if (doc.expense_id) {
+      const linkedExpense = await api.getExpense(doc.expense_id)
+      category = linkedExpense?.category || ''
+    }
     setEditForm({
       vendor: ext.vendor || '',
       amount: ext.amount ?? '',
       date: ext.date || '',
+      category,
       description: ext.description || '',
       doc_type: doc.doc_type || 'receipt',
     })
@@ -97,7 +104,16 @@ export default function DocumentsPage({ backendStatus, selectedBusiness: propBus
       doc_type: editForm.doc_type,
       reviewed: true,
     }
-    const updated = await api.updateDocument(activeDoc.id, payload)
+    const [updated] = await Promise.all([
+      api.updateDocument(activeDoc.id, payload),
+      activeDoc.expense_id ? api.updateExpense(activeDoc.expense_id, {
+        vendor: editForm.vendor || null,
+        amount: editForm.amount === '' ? null : Number(editForm.amount),
+        date: editForm.date || null,
+        category: editForm.category || null,
+        description: editForm.description || null,
+      }) : Promise.resolve(true),
+    ])
     setSaving(false)
     if (updated) {
       closeDoc()
@@ -364,6 +380,19 @@ export default function DocumentsPage({ backendStatus, selectedBusiness: propBus
                   style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
               </label>
  
+              {activeDoc.expense_id && (
+                <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                  Category <span style={{ opacity: 0.6 }}>(updates the linked expense too)</span>
+                  <select value={editForm.category}
+                    onChange={e => setEditForm({ ...editForm, category: e.target.value })}
+                    className="px-3 py-2 rounded-lg text-sm outline-none"
+                    style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}>
+                    <option value="">No category</option>
+                    {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
+              )}
+
               <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
                 Type
                 <select value={editForm.doc_type}

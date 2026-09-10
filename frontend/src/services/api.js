@@ -154,6 +154,50 @@ export const api = {
     }
   },
 
+  async getExpense(expenseId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}`)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('getExpense failed:', error);
+      return null;
+    }
+  },
+
+  async addSplitLine(splitGroup, item) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/split-group/${splitGroup}/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || `Backend error: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('addSplitLine failed:', error);
+      return { error: error.message };
+    }
+  },
+
+  async updateExpense(expenseId, updates) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('updateExpense failed:', error);
+      return null;
+    }
+  },
+
   async splitExpense(expenseId, splits) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}/split`, {
@@ -309,11 +353,12 @@ export const api = {
   },
  
   // ── Reports ───────────────────────────────────────────────────────────────
-  async getReportSummary(businessId, startDate = null, endDate = null) {
+  async getReportSummary(businessId, startDate = null, endDate = null, excludeCategories = []) {
     try {
       let url = `${API_BASE_URL}/api/reports/summary?business_id=${businessId}`
       if (startDate) url += `&start_date=${startDate}`
       if (endDate)   url += `&end_date=${endDate}`
+      if (excludeCategories.length) url += `&exclude_categories=${encodeURIComponent(excludeCategories.join(','))}`
       const response = await fetch(url)
       if (!response.ok) throw new Error(`Backend error: ${response.status}`)
       return await response.json()
@@ -323,11 +368,12 @@ export const api = {
     }
   },
  
-  async downloadReportPdf(businessId, startDate = null, endDate = null, watermark = true) {
+  async downloadReportPdf(businessId, startDate = null, endDate = null, watermark = true, excludeCategories = []) {
     try {
       let url = `${API_BASE_URL}/api/reports/pdf?business_id=${businessId}&watermark=${watermark}`
       if (startDate) url += `&start_date=${startDate}`
       if (endDate)   url += `&end_date=${endDate}`
+      if (excludeCategories.length) url += `&exclude_categories=${encodeURIComponent(excludeCategories.join(','))}`
  
       const response = await fetch(url)
       if (!response.ok) throw new Error(`Backend error: ${response.status}`)

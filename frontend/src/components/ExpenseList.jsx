@@ -7,29 +7,7 @@
 
 import { useState } from 'react'
 import { api } from '../services/api'
-
-const CATEGORY_COLORS = {
-  'Advertising & Marketing':        '#22D3EE',
-  'Banking & Financial Fees':       '#60A5FA',
-  'Business Insurance':             '#A78BFA',
-  'Business Meals (50% deductible)':'#34D399',
-  'Business Travel':                '#F97316',
-  'Contract Labor / Freelancers':   '#E879F9',
-  'Education & Training':           '#FBBF24',
-  'Equipment & Hardware':           '#FB923C',
-  'Home Office':                    '#4ADE80',
-  'Legal & Professional Services':  '#818CF8',
-  'Mileage & Vehicle':              '#A78BFA',
-  'Office Supplies':                '#38BDF8',
-  'Phone & Internet':               '#34D399',
-  'Rent & Lease':                   '#F43F5E',
-  'Repairs & Maintenance':          '#FBBF24',
-  'Software & Subscriptions':       '#22D3EE',
-  'Taxes & Licenses':               '#FB7185',
-  'Utilities':                      '#94A3B8',
-  'Other Business Expense':         '#64748B',
-  'Uncategorized':                  '#475569',
-}
+import { CATEGORY_COLORS, EXPENSE_CATEGORIES, categoryColor } from '../constants/categories'
 
 const fmt = (n) => new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD', minimumFractionDigits: 2
@@ -51,6 +29,7 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
   const [sortDir, setSortDir] = useState('desc')
   const [search, setSearch] = useState('')
   const [activeDoc, setActiveDoc] = useState(null)   // linked document open in preview/edit modal
+  const [activeExpenseId, setActiveExpenseId] = useState(null)  // expense that owns activeDoc — kept in sync on save
   const [editForm, setEditForm] = useState(null)
   const [docSaving, setDocSaving] = useState(false)
   const [docLoadingFor, setDocLoadingFor] = useState(null)  // expense id currently fetching its receipt
@@ -58,6 +37,16 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
   const [splitRows, setSplitRows] = useState([])          // [{ category, amount, description, deductible }]
   const [splitSaving, setSplitSaving] = useState(false)
   const [splitError, setSplitError] = useState('')
+  const [splitGroupView, setSplitGroupView] = useState(null)   // split_group id currently open in the group modal
+  const [groupRowSaving, setGroupRowSaving] = useState(null)   // id of the row currently being saved
+  const [newGroupLine, setNewGroupLine] = useState(null)       // { category, amount, description } while adding a line
+  const [addingLine, setAddingLine] = useState(false)
+  const [groupEdits, setGroupEdits] = useState({})   // { [expenseId]: { category, amount, description } } — local buffer while editing
+  // Manual entries (no receipt, not split) have no other edit path —
+  // receipted ones edit via the receipt preview, split ones via the split-group view.
+  const [editTarget, setEditTarget] = useState(null)
+  const [editExpenseForm, setEditExpenseForm] = useState(null)
+  const [editExpenseSaving, setEditExpenseSaving] = useState(false)
 
   const handleDelete = async (id) => {
     setDeleting(true)
@@ -80,30 +69,120 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
     if (!doc) return   // no document actually linked — nothing to show
     const ext = doc.extracted_data || {}
     setActiveDoc(doc)
+    setActiveExpenseId(expense.id)
     setEditForm({
-      vendor: ext.vendor || '',
-      amount: ext.amount ?? '',
-      date: ext.date || '',
-      description: ext.description || '',
+      vendor: ext.vendor || expense.vendor || '',
+      amount: ext.amount ?? expense.amount ?? '',
+      date: ext.date || expense.date || '',
+      category: expense.category || '',
+      description: ext.description || expense.description || '',
       doc_type: doc.doc_type || 'receipt',
     })
   }
 
-  const closeDoc = () => { setActiveDoc(null); setEditForm(null) }
+  const closeDoc = () => { setActiveDoc(null); setEditForm(null); setActiveExpenseId(null) }
 
   const saveDoc = async () => {
     if (!activeDoc) return
     setDocSaving(true)
-    const updated = await api.updateDocument(activeDoc.id, {
-      vendor: editForm.vendor || null,
-      amount: editForm.amount === '' ? null : Number(editForm.amount),
-      date: editForm.date || null,
-      description: editForm.description || null,
-      doc_type: editForm.doc_type,
-      reviewed: true,
-    })
+    const [docResult, expenseResult] = await Promise.all([
+      api.updateDocument(activeDoc.id, {
+        vendor: editForm.vendor || null,
+        amount: editForm.amount === '' ? null : Number(editForm.amount),
+        date: editForm.date || null,
+        description: editForm.description || null,
+        doc_type: editForm.doc_type,
+        reviewed: true,
+      }),
+      activeExpenseId ? api.updateExpense(activeExpenseId, {
+        vendor: editForm.vendor || null,
+        amount: editForm.amount === '' ? null : Number(editForm.amount),
+        date: editForm.date || null,
+        category: editForm.category || null,
+        description: editForm.description || null,
+      }) : Promise.resolve(true),
+    ])
     setDocSaving(false)
-    if (updated) closeDoc()
+    if (docResult && expenseResult) {
+      closeDoc()
+      onRefresh?.()
+    }
+  }
+
+  const closeSplitGroupView = () => {
+    setSplitGroupView(null)
+    setGroupEdits({})
+    setNewGroupLine(null)
+  }
+
+  const getRowEdit = (row) => groupEdits[row.id] || {
+    category: row.category || '',
+    amount: String(row.amount ?? ''),
+    description: row.description || '',
+  }
+
+  const setRowEdit = (row, patch) => {
+    setGroupEdits(prev => ({ ...prev, [row.id]: { ...getRowEdit(row), ...patch } }))
+  }
+
+  const commitGroupRow = async (row) => {
+    const edit = groupEdits[row.id]
+    if (!edit) return
+    setGroupRowSaving(row.id)
+    await api.updateExpense(row.id, {
+      category: edit.category || null,
+      amount: edit.amount === '' ? null : Number(edit.amount),
+      description: edit.description || null,
+    })
+    setGroupRowSaving(null)
+    setGroupEdits(prev => { const next = { ...prev }; delete next[row.id]; return next })
+    onRefresh?.()
+  }
+
+  const saveNewGroupLine = async () => {
+    if (!newGroupLine?.category || !newGroupLine?.amount || Number(newGroupLine.amount) <= 0) return
+    setAddingLine(true)
+    const result = await api.addSplitLine(splitGroupView, {
+      category: newGroupLine.category,
+      amount: Number(newGroupLine.amount),
+      description: newGroupLine.description || null,
+      deductible: true,
+    })
+    setAddingLine(false)
+    if (!result?.error) {
+      setNewGroupLine(null)
+      onRefresh?.()
+    }
+  }
+
+  const openEditExpense = (expense) => {
+    setEditTarget(expense)
+    setEditExpenseForm({
+      vendor: expense.vendor || '',
+      amount: String(expense.amount ?? ''),
+      category: expense.category || '',
+      date: expense.date || '',
+      description: expense.description || '',
+    })
+  }
+
+  const closeEditExpense = () => { setEditTarget(null); setEditExpenseForm(null) }
+
+  const saveEditExpense = async () => {
+    if (!editTarget) return
+    setEditExpenseSaving(true)
+    const updated = await api.updateExpense(editTarget.id, {
+      vendor: editExpenseForm.vendor || null,
+      amount: editExpenseForm.amount === '' ? null : Number(editExpenseForm.amount),
+      category: editExpenseForm.category || null,
+      date: editExpenseForm.date || null,
+      description: editExpenseForm.description || null,
+    })
+    setEditExpenseSaving(false)
+    if (updated) {
+      closeEditExpense()
+      onRefresh?.()
+    }
   }
 
   const openSplit = (expense) => {
@@ -274,7 +353,7 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
 
         {/* Rows */}
         {filtered.map((expense, i) => {
-          const catColor = CATEGORY_COLORS[expense.category] || '#64748B'
+          const catColor = categoryColor(expense.category)
           const isDeductible = expense.deductible !== false
 
           return (
@@ -297,9 +376,20 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
               {/* Description + vendor */}
               <div className="min-w-0 pr-4">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-0)' }}>
-                    {expense.description || expense.vendor || 'Unnamed expense'}
-                  </p>
+                  {(!expense.receipt_path && !expense.split_group) ? (
+                    <button
+                      title="Edit this expense"
+                      onClick={() => openEditExpense(expense)}
+                      className="text-sm font-semibold truncate text-left hover:underline"
+                      style={{ color: 'var(--text-0)' }}
+                    >
+                      {expense.description || expense.vendor || 'Unnamed expense'}
+                    </button>
+                  ) : (
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-0)' }}>
+                      {expense.description || expense.vendor || 'Unnamed expense'}
+                    </p>
+                  )}
                   {expense.notes && (
                     <span
                       title={expense.notes}
@@ -321,13 +411,14 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
                     </button>
                   )}
                   {expense.split_group ? (
-                    <span
-                      title="This is part of a split transaction"
-                      className="flex-shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded"
+                    <button
+                      title="View and edit all parts of this split"
+                      onClick={() => setSplitGroupView(expense.split_group)}
+                      className="flex-shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded hover:opacity-80"
                       style={{ background: 'rgba(167,139,250,0.15)', color: '#A78BFA' }}
                     >
                       split
-                    </span>
+                    </button>
                   ) : (
                     <button
                       title="Split this expense across categories"
@@ -394,22 +485,10 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
 
               {/* Delete */}
               <div className="flex justify-end">
-                {confirmDelete === expense.id ? (
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => handleDelete(expense.id)} disabled={deleting}
-                      className="text-xs font-semibold transition-all"
-                      style={{ color: 'var(--red)' }}>
-                      {deleting ? '...' : 'Del'}
-                    </button>
-                    <span style={{ color: 'var(--border)', fontSize: '10px' }}>|</span>
-                    <button onClick={() => setConfirmDelete(null)}
-                      className="text-xs" style={{ color: 'var(--text-2)' }}>×</button>
-                  </div>
-                ) : (
-                  <button onClick={() => setConfirmDelete(expense.id)}
-                    className="text-base leading-none transition-all opacity-20 hover:opacity-80"
-                    style={{ color: 'var(--red)' }}>×</button>
-                )}
+                <button onClick={() => setConfirmDelete(expense.id)}
+                  title="Delete expense"
+                  className="text-base leading-none transition-all opacity-30 hover:opacity-90 p-2 -m-2"
+                  style={{ color: 'var(--red)' }}>×</button>
               </div>
             </div>
           )
@@ -505,6 +584,17 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
               </label>
 
               <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Category
+                <select value={editForm.category}
+                  onChange={e => setEditForm({ ...editForm, category: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}>
+                  <option value="">No category</option>
+                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
                 Type
                 <select value={editForm.doc_type}
                   onChange={e => setEditForm({ ...editForm, doc_type: e.target.value })}
@@ -528,7 +618,7 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
               </label>
 
               <p className="text-xs -mt-1" style={{ color: 'var(--text-2)' }}>
-                Editing here updates the receipt record only — it won't change the amount/vendor already logged on this expense.
+                Saves to this expense and its receipt together, so they stay in sync.
               </p>
 
               <div className="flex gap-2 mt-auto pt-2">
@@ -635,6 +725,249 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
           </div>
         </div>
       )}
+
+
+      {/* Edit expense modal — only reachable for manual entries with no receipt and not split */}
+      {editTarget && editExpenseForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={closeEditExpense}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl overflow-hidden flex flex-col max-h-[85vh]"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2 px-5 py-4" style={{ borderBottom: '1px solid var(--border-soft)' }}>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-0)' }}>Edit expense</p>
+              <button onClick={closeEditExpense} className="text-lg leading-none opacity-50 hover:opacity-100 flex-shrink-0"
+                style={{ color: 'var(--text-1)' }}>×</button>
+            </div>
+
+            <div className="flex flex-col gap-3 px-5 py-4 overflow-y-auto">
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Vendor
+                <input value={editExpenseForm.vendor}
+                  onChange={e => setEditExpenseForm({ ...editExpenseForm, vendor: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Amount
+                <input type="number" step="0.01" value={editExpenseForm.amount}
+                  onChange={e => setEditExpenseForm({ ...editExpenseForm, amount: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Category
+                <select value={editExpenseForm.category}
+                  onChange={e => setEditExpenseForm({ ...editExpenseForm, category: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}>
+                  <option value="">No category</option>
+                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Date
+                <input type="date" value={editExpenseForm.date}
+                  onChange={e => setEditExpenseForm({ ...editExpenseForm, date: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Description
+                <textarea rows={2} value={editExpenseForm.description}
+                  onChange={e => setEditExpenseForm({ ...editExpenseForm, description: e.target.value })}
+                  className="px-3 py-2 rounded-lg text-sm outline-none resize-none"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+              </label>
+            </div>
+
+            <div className="flex gap-2 px-5 py-4" style={{ borderTop: '1px solid var(--border-soft)' }}>
+              <button onClick={closeEditExpense}
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                Cancel
+              </button>
+              <button onClick={saveEditExpense} disabled={editExpenseSaving}
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                style={{ background: 'var(--accent)', color: '#04141a', opacity: editExpenseSaving ? 0.6 : 1 }}>
+                {editExpenseSaving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Split group modal — view/edit every line item in a split, add more lines */}
+      {splitGroupView && (() => {
+        const groupRows = expenses.filter(e => e.split_group === splitGroupView)
+        const groupTotal = groupRows.reduce((s, r) => s + (r.amount || 0), 0)
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            style={{ background: 'rgba(0,0,0,0.6)' }}
+            onClick={closeSplitGroupView}
+          >
+            <div
+              className="w-full max-w-lg rounded-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-2 px-5 py-4" style={{ borderBottom: '1px solid var(--border-soft)' }}>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-0)' }}>
+                    Split transaction — {groupRows[0]?.vendor || groupRows[0]?.description}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
+                    {groupRows.length} part{groupRows.length !== 1 ? 's' : ''} · total {fmt(groupTotal)}
+                  </p>
+                </div>
+                <button onClick={closeSplitGroupView} className="text-lg leading-none opacity-50 hover:opacity-100 flex-shrink-0"
+                  style={{ color: 'var(--text-1)' }}>×</button>
+              </div>
+
+              <div className="flex flex-col gap-3 px-5 py-4 overflow-y-auto">
+                {groupRows.map(row => {
+                  const edit = getRowEdit(row)
+                  return (
+                    <div key={row.id} className="rounded-xl p-3 flex flex-col gap-2"
+                      style={{ background: 'var(--card-2)', border: '1px solid var(--border)' }}>
+                      <div className="flex items-center gap-2">
+                        <select value={edit.category}
+                          onChange={e => setRowEdit(row, { category: e.target.value })}
+                          onBlur={() => commitGroupRow(row)}
+                          className="flex-1 min-w-0 rounded-lg px-2 py-1.5 text-xs outline-none"
+                          style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }}>
+                          <option value="">Category…</option>
+                          {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <input type="number" step="0.01" value={edit.amount}
+                          onChange={e => setRowEdit(row, { amount: e.target.value })}
+                          onBlur={() => commitGroupRow(row)}
+                          className="w-24 rounded-lg px-2 py-1.5 text-xs outline-none text-right"
+                          style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+                        <button onClick={() => setConfirmDelete(row.id)}
+                          title="Delete this line"
+                          className="text-base leading-none opacity-40 hover:opacity-90 flex-shrink-0"
+                          style={{ color: 'var(--red)' }}>×</button>
+                      </div>
+                      <input type="text" placeholder="Description (optional)" value={edit.description}
+                        onChange={e => setRowEdit(row, { description: e.target.value })}
+                        onBlur={() => commitGroupRow(row)}
+                        className="rounded-lg px-2 py-1.5 text-xs outline-none"
+                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+                      {groupRowSaving === row.id && (
+                        <p className="text-xs" style={{ color: 'var(--text-2)' }}>Saving…</p>
+                      )}
+                    </div>
+                  )
+                })}
+
+                {newGroupLine ? (
+                  <div className="rounded-xl p-3 flex flex-col gap-2"
+                    style={{ background: 'var(--card-2)', border: '1px dashed var(--accent)' }}>
+                    <div className="flex items-center gap-2">
+                      <select value={newGroupLine.category}
+                        onChange={e => setNewGroupLine({ ...newGroupLine, category: e.target.value })}
+                        className="flex-1 min-w-0 rounded-lg px-2 py-1.5 text-xs outline-none"
+                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }}>
+                        <option value="">Category…</option>
+                        {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <input type="number" step="0.01" placeholder="0.00" value={newGroupLine.amount}
+                        onChange={e => setNewGroupLine({ ...newGroupLine, amount: e.target.value })}
+                        className="w-24 rounded-lg px-2 py-1.5 text-xs outline-none text-right"
+                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+                    </div>
+                    <input type="text" placeholder="Description (optional)" value={newGroupLine.description}
+                      onChange={e => setNewGroupLine({ ...newGroupLine, description: e.target.value })}
+                      className="rounded-lg px-2 py-1.5 text-xs outline-none"
+                      style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-0)' }} />
+                    <div className="flex gap-2">
+                      <button onClick={() => setNewGroupLine(null)}
+                        className="flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                        Cancel
+                      </button>
+                      <button onClick={saveNewGroupLine} disabled={addingLine || !newGroupLine.category || !newGroupLine.amount}
+                        className="flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                        style={{ background: 'var(--accent)', color: '#04141a', opacity: (addingLine || !newGroupLine.category || !newGroupLine.amount) ? 0.6 : 1 }}>
+                        {addingLine ? 'Adding…' : 'Add line'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setNewGroupLine({ category: '', amount: '', description: '' })}
+                    className="text-xs font-semibold text-left py-1"
+                    style={{ color: 'var(--accent)' }}>
+                    + Add another line item
+                  </button>
+                )}
+              </div>
+
+              <div className="flex px-5 py-4" style={{ borderTop: '1px solid var(--border-soft)' }}>
+                <button onClick={closeSplitGroupView}
+                  className="w-full px-3 py-2 rounded-lg text-sm font-semibold"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (() => {
+        const target = expenses.find(e => e.id === confirmDelete)
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            style={{ background: 'rgba(0,0,0,0.6)' }}
+            onClick={() => setConfirmDelete(null)}
+          >
+            <div
+              className="w-full max-w-sm rounded-2xl p-5 flex flex-col gap-4"
+              style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-0)' }}>
+                  Delete this expense?
+                </p>
+                {target && (
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-2)' }}>
+                    {target.description || target.vendor} · {fmt(target.amount)}
+                  </p>
+                )}
+                <p className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>
+                  This can't be undone.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmDelete(null)}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                  Cancel
+                </button>
+                <button onClick={() => handleDelete(confirmDelete)} disabled={deleting}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                  style={{ background: 'var(--red)', color: '#fff', opacity: deleting ? 0.6 : 1 }}>
+                  {deleting ? 'Deleting…' : 'Yes, delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

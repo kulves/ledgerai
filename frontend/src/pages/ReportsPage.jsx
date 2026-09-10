@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react'
 import { api } from '../services/api'
+import { EXPENSE_CATEGORIES } from '../constants/categories'
  
 const YEAR = new Date().getFullYear()
 const PERIODS = [
@@ -29,6 +30,8 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
   const [loading, setLoading] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [downloaded, setDownloaded] = useState(false)
+  const [excludedCategories, setExcludedCategories] = useState(['Uncategorized', 'Personal (not deductible)'])
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
  
   useEffect(() => {
     if (!propBusinesses?.length) {
@@ -44,16 +47,20 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
     if (!activeBusiness) return
     setLoading(true)
     setReport(null)
-    api.getReportSummary(activeBusiness.id, period.start, period.end).then(data => {
+    api.getReportSummary(activeBusiness.id, period.start, period.end, excludedCategories).then(data => {
       setReport(data)
       setLoading(false)
     })
-  }, [activeBusiness, period])
+  }, [activeBusiness, period, excludedCategories])
+
+  const toggleExcludedCategory = (cat) => {
+    setExcludedCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
+  }
  
   const handleDownload = async () => {
     if (!activeBusiness) return
     setDownloading(true)
-    await api.downloadReportPdf(activeBusiness.id, period.start, period.end, true)
+    await api.downloadReportPdf(activeBusiness.id, period.start, period.end, true, excludedCategories)
     setDownloading(false)
     setDownloaded(true)
     setTimeout(() => setDownloaded(false), 3000)
@@ -61,7 +68,8 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
  
   const handleExcel = async () => {
     if (!activeBusiness) return
-    const url = `http://127.0.0.1:8000/api/reports/excel?business_id=${activeBusiness.id}&start_date=${period.start}&end_date=${period.end}`
+    let url = `http://127.0.0.1:8000/api/reports/excel?business_id=${activeBusiness.id}&start_date=${period.start}&end_date=${period.end}`
+    if (excludedCategories.length) url += `&exclude_categories=${encodeURIComponent(excludedCategories.join(','))}`
     window.open(url, '_blank')
   }
  
@@ -142,6 +150,31 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
               {p.label}
             </button>
           ))}
+        </div>
+        <div className="relative">
+          <button onClick={() => setShowCategoryPicker(v => !v)}
+            className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+            Excluding {excludedCategories.length} categor{excludedCategories.length === 1 ? 'y' : 'ies'} ▾
+          </button>
+          {showCategoryPicker && (
+            <div className="absolute z-40 top-full mt-2 left-0 w-72 max-h-80 overflow-y-auto rounded-xl p-3 flex flex-col gap-1"
+              style={{ background: 'var(--card)', border: '1px solid var(--border)', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+              <p className="text-xs font-semibold mb-1 px-1" style={{ color: 'var(--text-2)' }}>
+                Leave these out of PDF & Excel reports
+              </p>
+              {EXPENSE_CATEGORIES.map(cat => (
+                <label key={cat} className="flex items-center gap-2 px-1 py-1 rounded-lg cursor-pointer text-xs"
+                  style={{ color: 'var(--text-0)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <input type="checkbox" checked={excludedCategories.includes(cat)}
+                    onChange={() => toggleExcludedCategory(cat)} />
+                  {cat}
+                </label>
+              ))}
+            </div>
+          )}
         </div>
       </div>
  
