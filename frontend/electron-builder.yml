@@ -32,5 +32,8 @@ extraResources:
     to: "app/knowledge_base"
   - from: "../database"
     to: "app/database"
-  - from: "../.env"
-    to: "app/.env"
+  # NOTE: .env is intentionally NOT bundled here — it holds live secrets
+  # (Stripe key, Plaid secret, license signing key). Bundling it would ship
+  # those secrets to every person who downloads the installer. config.py
+  # already falls back to safe placeholder defaults when no .env is present,
+  # which is exactly what beta builds should use.
