@@ -69,14 +69,24 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
   const [message, setMessage]       = useState({ text: '', type: 'success' })
   const [showAddBiz, setShowAddBiz] = useState(false)
   const [newBiz, setNewBiz]         = useState({ name: '', entity_type: 'sole_prop', state: 'CA' })
+  const [telemetry, setTelemetry]   = useState(null)
+  const [telemetrySaving, setTelemetrySaving] = useState(false)
 
   useEffect(() => { loadAll() }, [])
 
   const loadAll = async () => {
-    const [info, statsData, bizList] = await Promise.all([
-      api.getAppInfo(), api.getStats(), api.getBusinesses(),
+    const [info, statsData, bizList, telemetrySettings] = await Promise.all([
+      api.getAppInfo(), api.getStats(), api.getBusinesses(), api.getTelemetrySettings(),
     ])
-    setAppInfo(info); setStats(statsData); setBusinesses(bizList || [])
+    setAppInfo(info); setStats(statsData); setBusinesses(bizList || []); setTelemetry(telemetrySettings)
+  }
+
+  const toggleTelemetry = async () => {
+    if (!telemetry) return
+    setTelemetrySaving(true)
+    const updated = await api.updateTelemetrySettings({ share_corrections: !telemetry.share_corrections })
+    setTelemetrySaving(false)
+    if (updated) setTelemetry(updated)
   }
 
   const showMsg = (text, type = 'success') => {
@@ -247,6 +257,30 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
         <Row label="Mileage Trips" value={stats?.mileage_count ?? '—'} />
         <Row label="Documents" value={stats?.document_count ?? '—'} />
         <Row label="Businesses" value={businesses.length} />
+      </Section>
+
+      {/* Privacy */}
+      <Section title="Privacy">
+        <div className="flex items-center justify-between py-1 gap-4">
+          <div>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+              Share anonymized patterns to help improve Luca
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
+              When you correct a category or a receipt detail, an anonymized signal (category names,
+              amounts, confidence level) may be shared — never vendor names, descriptions, or account info.
+            </p>
+          </div>
+          <button
+            onClick={toggleTelemetry}
+            disabled={!telemetry || telemetrySaving}
+            className="flex-shrink-0 w-11 h-6 rounded-full relative transition-all"
+            style={{ background: telemetry?.share_corrections ? 'var(--accent)' : 'var(--border)' }}
+          >
+            <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
+              style={{ left: telemetry?.share_corrections ? '22px' : '2px' }} />
+          </button>
+        </div>
       </Section>
 
       {/* Danger Zone */}

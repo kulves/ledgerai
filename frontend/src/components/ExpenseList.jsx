@@ -30,6 +30,7 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
   const [search, setSearch] = useState('')
   const [activeDoc, setActiveDoc] = useState(null)   // linked document open in preview/edit modal
   const [activeExpenseId, setActiveExpenseId] = useState(null)  // expense that owns activeDoc — kept in sync on save
+  const [originalDocValues, setOriginalDocValues] = useState(null)  // snapshot at open time, for correction-detection on save
   const [editForm, setEditForm] = useState(null)
   const [docSaving, setDocSaving] = useState(false)
   const [docLoadingFor, setDocLoadingFor] = useState(null)  // expense id currently fetching its receipt
@@ -62,25 +63,61 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
     else { setSortBy(col); setSortDir('desc') }
   }
 
+  // Compares what was originally extracted/assigned to what the user actually
+  // saved, logging each correction type that applies. Vendor/date corrections
+  // only log the FACT of a correction (plus confidence) — never the actual
+  // text, per the privacy design in routes/corrections.py. Category and
+  // amount are not identifying on their own, so those carry real values.
+  const logDocCorrections = (original, updated) => {
+    if (!original || !updated) return
+    const confidence = original.confidence || null
+
+    if (original.category && updated.category && original.category !== updated.category) {
+      api.logCorrection({
+        correction_type: 'category_correction',
+        category_before: original.category,
+        category_after: updated.category,
+        amount: updated.amount === '' ? null : Number(updated.amount),
+        confidence,
+      })
+    }
+    if (String(original.vendor || '') !== String(updated.vendor || '')) {
+      api.logCorrection({ correction_type: 'ocr_vendor_correction', confidence })
+    }
+    if (String(original.amount ?? '') !== String(updated.amount ?? '')) {
+      api.logCorrection({
+        correction_type: 'ocr_amount_correction',
+        amount: updated.amount === '' ? null : Number(updated.amount),
+        confidence,
+      })
+    }
+    if (String(original.date || '') !== String(updated.date || '')) {
+      api.logCorrection({ correction_type: 'ocr_date_correction', confidence })
+    }
+  }
+
   const openReceipt = async (expense) => {
     setDocLoadingFor(expense.id)
     const doc = await api.getExpenseDocument(expense.id)
     setDocLoadingFor(null)
     if (!doc) return   // no document actually linked — nothing to show
     const ext = doc.extracted_data || {}
-    setActiveDoc(doc)
-    setActiveExpenseId(expense.id)
-    setEditForm({
+    const initial = {
       vendor: ext.vendor || expense.vendor || '',
       amount: ext.amount ?? expense.amount ?? '',
       date: ext.date || expense.date || '',
       category: expense.category || '',
       description: ext.description || expense.description || '',
       doc_type: doc.doc_type || 'receipt',
-    })
+      confidence: ext.confidence || null,
+    }
+    setActiveDoc(doc)
+    setActiveExpenseId(expense.id)
+    setEditForm(initial)
+    setOriginalDocValues(initial)   // snapshot for correction-detection on save
   }
 
-  const closeDoc = () => { setActiveDoc(null); setEditForm(null); setActiveExpenseId(null) }
+  const closeDoc = () => { setActiveDoc(null); setEditForm(null); setActiveExpenseId(null); setOriginalDocValues(null) }
 
   const saveDoc = async () => {
     if (!activeDoc) return
@@ -104,6 +141,7 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
     ])
     setDocSaving(false)
     if (docResult && expenseResult) {
+      logDocCorrections(originalDocValues, editForm)
       closeDoc()
       onRefresh?.()
     }
@@ -227,6 +265,18 @@ export default function ExpenseList({ expenses = [], loading, onDeleted, onRefre
       setSplitError(result.error)
       return
     }
+    // Splitting is itself a correction: Luca had this as one category,
+    // it should have been several. One event per resulting line.
+    splitRows.forEach(r => {
+      api.logCorrection({
+        business_id: splitTarget.business_id,
+        correction_type: 'split_correction',
+        category_before: splitTarget.category,
+        category_after: r.category,
+        amount: parseFloat(r.amount),
+        confidence: splitTarget.confidence,
+      })
+    })
     closeSplit()
     onRefresh?.()
   }

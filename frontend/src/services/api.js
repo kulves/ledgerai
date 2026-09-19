@@ -65,6 +65,43 @@ export const api = {
     }
   },
 
+  // Fire-and-forget: never blocks the UI or surfaces errors to the user.
+  // This is telemetry (see routes/corrections.py for what data this
+  // actually carries -- never vendor names, descriptions, or accounts).
+  logCorrection(correction) {
+    fetch(`${API_BASE_URL}/api/corrections/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(correction)
+    }).catch(() => {})   // best-effort -- a failed log should never interrupt the user
+  },
+
+  async getTelemetrySettings() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/corrections/telemetry-settings`)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getTelemetrySettings failed:', error)
+      return null
+    }
+  },
+
+  async updateTelemetrySettings(updates) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/corrections/telemetry-settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('updateTelemetrySettings failed:', error)
+      return null
+    }
+  },
+
   async categorizeIncome(source, amount, description = '') {
     try {
       const response = await fetch(`${API_BASE_URL}/api/luca/categorize`, {

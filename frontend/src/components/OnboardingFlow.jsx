@@ -54,6 +54,7 @@ export default function OnboardingFlow({ onComplete }) {
   const [bizEntity, setBizEntity]   = useState('sole_prop')
   const [bizState, setBizState]     = useState('CA')
   const [agreed, setAgreed]         = useState(false)
+  const [shareCorrections, setShareCorrections] = useState(true)   // default on, but explicitly captured at install time
   const [creating, setCreating]     = useState(false)
   const [error, setError]           = useState('')
 
@@ -62,6 +63,13 @@ export default function OnboardingFlow({ onComplete }) {
   const next = () => {
     setError('')
     setStep(s => s + 1)
+  }
+
+  const handleAgree = () => {
+    // Persist the user's choice at the moment they accept the agreement —
+    // captured explicitly at install time, not just a silent default.
+    api.updateTelemetrySettings({ share_corrections: shareCorrections })
+    next()
   }
 
   const handleCreateBusiness = async () => {
@@ -189,7 +197,8 @@ export default function OnboardingFlow({ onComplete }) {
                   { icon: '💻', title: 'Runs locally', desc: 'Luca runs on your machine. Your financial data is stored on your hard drive, not on any cloud server.' },
                   { icon: '🚫', title: 'No data selling', desc: 'Ledger AI will never sell, share, or monetize your financial information. Ever.' },
                   { icon: '🤖', title: 'AI stays local', desc: 'The AI models run on your computer. Your questions and documents never leave your machine.' },
-                  { icon: '📤', title: 'You control exports', desc: 'Your data leaves your machine only when you explicitly export a report or backup — your choice, your timing.' },
+                  { icon: '📊', title: 'Anonymized improvement data', desc: 'When you correct something Luca gets wrong, an anonymized signal (category names, amounts — never vendor names or account info) may help improve Luca for everyone. Full details in the User Agreement.' },
+                  { icon: '📤', title: 'You control exports', desc: 'Your actual financial records and files leave your machine only when you explicitly export a report or backup — your choice, your timing.' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <span className="text-xl flex-shrink-0">{item.icon}</span>
@@ -357,7 +366,7 @@ export default function OnboardingFlow({ onComplete }) {
             <Step
               icon="📄"
               title="One last thing."
-              onNext={agreed ? next : undefined}
+              onNext={agreed ? handleAgree : undefined}
               nextLabel="I Agree & Continue →"
               nextDisabled={!agreed}
             >
@@ -373,9 +382,26 @@ export default function OnboardingFlow({ onComplete }) {
                   advice. Always consult a licensed professional before making financial decisions.
                 </p>
                 <p className="mb-2">
-                  <strong>Your data belongs to you.</strong> Ledger AI will never sell, share,
-                  or transmit your financial data to third parties. All data is stored locally
-                  on your device.
+                  <strong>Local-first data storage & backups.</strong> Ledger AI operates on a
+                  "local-first" architecture. All your files, data entries, and financial
+                  information are stored strictly on your own device. We do not upload, host, or
+                  maintain a copy of your local data on our servers. You are solely responsible
+                  for maintaining your own backups of your local data.
+                </p>
+                <p className="mb-2">
+                  <strong>Payment processing.</strong> Purchases are processed securely through
+                  our payment processor, Stripe. We do not store your card details ourselves.
+                  The only data we maintain is your name, email, and transaction history, kept
+                  solely for customer support, license verification, and tax compliance.
+                </p>
+                <p className="mb-2">
+                  <strong>De-identified feedback for improving Luca.</strong> When you correct
+                  something Luca gets wrong — a category, an extracted receipt detail — an
+                  anonymized signal (category names, amounts, confidence level) may be used to
+                  improve accuracy for all users. This data is stripped of anything identifying
+                  (vendor names, descriptions, account details, and anything that could be linked
+                  back to you or your business) before it ever leaves your device, and consists
+                  only of the correction pattern itself.
                 </p>
                 <p className="mb-2">
                   <strong>AI limitations.</strong> Luca uses AI models that may produce
@@ -392,6 +418,28 @@ export default function OnboardingFlow({ onComplete }) {
                   the United States. By using Ledger AI, you agree to these terms.
                 </p>
               </div>
+
+              {/* Separate, explicit toggle for anonymized correction sharing */}
+              <div className="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-2xl p-4 mb-4">
+                <div>
+                  <p className="text-sm font-semibold text-[#0C2340]">
+                    Share anonymized patterns to improve Luca
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Category names, amounts, and confidence levels — never vendor names,
+                    descriptions, or account info. You can read the full details above.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShareCorrections(v => !v)}
+                  className="flex-shrink-0 w-11 h-6 rounded-full relative transition-all"
+                  style={{ background: shareCorrections ? '#0C2340' : '#D1D5DB' }}
+                >
+                  <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
+                    style={{ left: shareCorrections ? '22px' : '2px' }} />
+                </button>
+              </div>
+
               <button
                 onClick={() => setAgreed(!agreed)}
                 className="flex items-start gap-3 w-full text-left"

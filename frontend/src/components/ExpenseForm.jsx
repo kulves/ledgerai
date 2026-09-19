@@ -108,6 +108,19 @@ export default function ExpenseForm({ business, onSaved, backendStatus }) {
     setSaving(false)
 
     if (saved) {
+      // If Luca suggested a category and the user saved a different one,
+      // that's a correction worth logging — see routes/corrections.py.
+      if (lucaSuggestion?.success && lucaSuggestion.category && lucaSuggestion.category !== form.category) {
+        api.logCorrection({
+          business_id: business.id,
+          correction_type: 'category_correction',
+          category_before: lucaSuggestion.category,
+          category_after: form.category,
+          amount: parseFloat(form.amount),
+          confidence: lucaSuggestion.confidence,
+        })
+      }
+
       onSaved(saved)
       setSaved(true)
       // Reset form for next entry, keep date and business

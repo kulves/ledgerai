@@ -1,35 +1,39 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-node_modules
-dist
-dist-ssr
-*.local
+# Environment variables and secrets
+.env
+*.key
+*.pem
+*.secret
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Database files (encrypted user data)
+*.db
+*.sqlite
+*.sqlite3
+database/ledgerai.db
+
+# Node.js
+node_modules/
+dist/
+build/
+out/
+
+# OS
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
 
-# Build output — never commit
-dist-installer/
-frontend/dist/
+# Logs
+*.log
+
+# Local uploads
+uploads/
+
+# Build artifacts — never commit these (large, machine-specific, rebuilt as needed)
 python-embed/
-frontend/python-embed/
-
-# Electron unpacked
-win-unpacked/
-*.exe
-*.blockmap
+dist-installer/
+get-pip.py

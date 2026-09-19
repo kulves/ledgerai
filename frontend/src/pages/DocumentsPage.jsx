@@ -47,6 +47,7 @@ export default function DocumentsPage({ backendStatus, selectedBusiness: propBus
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [activeDoc, setActiveDoc] = useState(null)     // doc currently open in the preview/edit modal
   const [editForm, setEditForm] = useState(null)        // editable copy of activeDoc.extracted_data
+  const [originalDocValues, setOriginalDocValues] = useState(null)  // snapshot for correction-detection on save
   const [saving, setSaving] = useState(false)
  
   useEffect(() => {
@@ -81,17 +82,49 @@ export default function DocumentsPage({ backendStatus, selectedBusiness: propBus
       const linkedExpense = await api.getExpense(doc.expense_id)
       category = linkedExpense?.category || ''
     }
-    setEditForm({
+    const initial = {
       vendor: ext.vendor || '',
       amount: ext.amount ?? '',
       date: ext.date || '',
       category,
       description: ext.description || '',
       doc_type: doc.doc_type || 'receipt',
-    })
+      confidence: ext.confidence || null,
+    }
+    setEditForm(initial)
+    setOriginalDocValues(initial)
   }
  
-  const closeDoc = () => { setActiveDoc(null); setEditForm(null) }
+  const closeDoc = () => { setActiveDoc(null); setEditForm(null); setOriginalDocValues(null) }
+
+  // Same anonymized-only logic as ExpenseList.jsx's receipt modal — see
+  // routes/corrections.py for exactly what does/doesn't get transmitted.
+  const logDocCorrections = (original, updated) => {
+    if (!original || !updated) return
+    const confidence = original.confidence || null
+    if (original.category && updated.category && original.category !== updated.category) {
+      api.logCorrection({
+        correction_type: 'category_correction',
+        category_before: original.category,
+        category_after: updated.category,
+        amount: updated.amount === '' ? null : Number(updated.amount),
+        confidence,
+      })
+    }
+    if (String(original.vendor || '') !== String(updated.vendor || '')) {
+      api.logCorrection({ correction_type: 'ocr_vendor_correction', confidence })
+    }
+    if (String(original.amount ?? '') !== String(updated.amount ?? '')) {
+      api.logCorrection({
+        correction_type: 'ocr_amount_correction',
+        amount: updated.amount === '' ? null : Number(updated.amount),
+        confidence,
+      })
+    }
+    if (String(original.date || '') !== String(updated.date || '')) {
+      api.logCorrection({ correction_type: 'ocr_date_correction', confidence })
+    }
+  }
  
   const saveDoc = async () => {
     if (!activeDoc) return
@@ -116,6 +149,7 @@ export default function DocumentsPage({ backendStatus, selectedBusiness: propBus
     ])
     setSaving(false)
     if (updated) {
+      logDocCorrections(originalDocValues, editForm)
       closeDoc()
       loadDocuments()
     }

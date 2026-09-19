@@ -32,3 +32,8 @@ Thumbs.db
 
 # Local uploads
 uploads/
+
+# Build artifacts — never commit these (large, machine-specific, rebuilt as needed)
+python-embed/
+dist-installer/
+get-pip.py

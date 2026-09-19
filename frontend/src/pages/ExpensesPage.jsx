@@ -108,6 +108,16 @@ export default function ExpensesPage({ backendStatus, selectedBusiness, onSelect
     })
     setConfirming(false)
     if (expense) {
+      if (extracted?.lucaCategory && extracted.lucaCategory !== category) {
+        api.logCorrection({
+          business_id: activeBusiness.id,
+          correction_type: 'category_correction',
+          category_before: extracted.lucaCategory,
+          category_after: category,
+          amount: parseFloat(editFields.amount),
+          confidence: extracted.confidence,
+        })
+      }
       setExtracted(null)
       loadExpenses()
       showMsg(`✓ Expense logged: ${editFields.vendor} $${editFields.amount}`)
@@ -147,6 +157,7 @@ export default function ExpensesPage({ backendStatus, selectedBusiness, onSelect
         confidence: ext.confidence || 'low',
         document_id: docResult.document_id,
         filename: file.name,
+        lucaCategory: category || null,   // Luca's initial suggestion, for correction-detection at confirm time
       })
       setEditFields({ vendor, amount, date, category, description })
  

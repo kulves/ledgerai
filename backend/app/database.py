@@ -257,10 +257,53 @@ def init_db() -> None:
             updated_at          TEXT    NOT NULL DEFAULT (datetime('now'))
         )
     """)
+
+    # ── Corrections log ──────────────────────────────────────────────────
+    # Every time a user corrects something Luca got wrong — a category
+    # suggestion, an OCR-extracted field, or splits a mis-categorized
+    # expense — that's a signal worth capturing. Stored in full detail
+    # locally (useful for future per-user personalization). Only a
+    # stripped-down, anonymized subset (never vendor/description/account
+    # info — see routes/corrections.py) is ever considered for sync to
+    # the central system, and only if the user has opted in.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS corrections (
+            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+            business_id       INTEGER REFERENCES businesses(id),
+            correction_type   TEXT    NOT NULL,
+            category_before   TEXT,
+            category_after    TEXT,
+            amount            REAL,
+            confidence        TEXT,
+            synced            INTEGER NOT NULL DEFAULT 0,
+            created_at        TEXT    NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+
+    # ── Telemetry settings (singleton row, same pattern as license) ────
+    # share_corrections defaults ON: the synced payload is already
+    # stripped of anything identifying (see routes/corrections.py), so
+    # there's no exposure even by default — but it stays a real, visible
+    # toggle in Settings so the user can turn it off any time.
+    # sync_endpoint is blank until a real collection server exists —
+    # sync silently no-ops until it's configured.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS telemetry_settings (
+            id                INTEGER PRIMARY KEY CHECK (id = 1),
+            share_corrections INTEGER NOT NULL DEFAULT 1,
+            sync_endpoint     TEXT,
+            last_synced_at    TEXT
+        )
+    """)
  
     # Ensure the single license row always exists (id=1, defaults to free)
     cursor.execute("""
         INSERT OR IGNORE INTO license (id, tier) VALUES (1, 'free')
+    """)
+
+    # Ensure the single telemetry_settings row always exists (id=1, share on by default)
+    cursor.execute("""
+        INSERT OR IGNORE INTO telemetry_settings (id, share_corrections) VALUES (1, 1)
     """)
  
     # ── Migrations (safe to re-run — only adds a column if missing) ────────

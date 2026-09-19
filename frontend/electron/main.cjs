@@ -166,16 +166,29 @@ function startBackend() {
   console.log('Working directory:', PROJECT_ROOT)
   const { DEBUG: _ignoredDebug, ...backendEnv } = process.env
 
+  // NOTE: embeddable Python (used in production, via python-embed) ships
+  // with a python3XX._pth file that puts the interpreter in an isolated
+  // mode — one side effect is that it IGNORES the PYTHONPATH environment
+  // variable entirely (confirmed: this is documented, known embeddable-
+  // Python behavior, not specific to this app). Setting PYTHONPATH here
+  // used to look like it should work but silently did nothing.
+  //
+  // Instead, we explicitly insert PROJECT_ROOT into sys.path ourselves at
+  // runtime (a plain list mutation, unaffected by any startup-time path
+  // isolation) and use runpy.run_module(..., run_name='__main__') to run
+  // backend.app.main exactly as `-m backend.app.main` would — including
+  // triggering its `if __name__ == "__main__":` block correctly.
+  const bootstrap =
+    `import sys; sys.path.insert(0, ${JSON.stringify(PROJECT_ROOT)}); ` +
+    `import runpy; runpy.run_module('backend.app.main', run_name='__main__')`
+
   backendProcess = spawn(
     PYTHON_PATH,
-    ['-m', 'backend.app.main'],
+    ['-c', bootstrap],
     {
       cwd: PROJECT_ROOT,
       shell: false,
-      env: {
-        ...backendEnv,
-        PYTHONPATH: PROJECT_ROOT,
-      }
+      env: backendEnv,
     }
   )
 
