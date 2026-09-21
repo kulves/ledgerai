@@ -30,6 +30,14 @@ const ENTITY_TYPES = [
 ]
 const STATES = ['CA','TX','FL','NY','IL','GA','WA','AZ','NV','CO','OTHER']
 
+const CORRECTION_TYPE_LABELS = {
+  category_correction: 'Category corrections',
+  ocr_vendor_correction: 'Vendor OCR corrections',
+  ocr_amount_correction: 'Amount OCR corrections',
+  ocr_date_correction: 'Date OCR corrections',
+  split_correction: 'Split corrections',
+}
+
 function Section({ title, children }) {
   return (
     <div className="rounded-2xl overflow-hidden"
@@ -69,24 +77,15 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
   const [message, setMessage]       = useState({ text: '', type: 'success' })
   const [showAddBiz, setShowAddBiz] = useState(false)
   const [newBiz, setNewBiz]         = useState({ name: '', entity_type: 'sole_prop', state: 'CA' })
-  const [telemetry, setTelemetry]   = useState(null)
-  const [telemetrySaving, setTelemetrySaving] = useState(false)
+  const [corrections, setCorrections] = useState(null)   // summary + recent list, for the verification view
 
   useEffect(() => { loadAll() }, [])
 
   const loadAll = async () => {
-    const [info, statsData, bizList, telemetrySettings] = await Promise.all([
-      api.getAppInfo(), api.getStats(), api.getBusinesses(), api.getTelemetrySettings(),
+    const [info, statsData, bizList, correctionsData] = await Promise.all([
+      api.getAppInfo(), api.getStats(), api.getBusinesses(), api.getCorrections(20),
     ])
-    setAppInfo(info); setStats(statsData); setBusinesses(bizList || []); setTelemetry(telemetrySettings)
-  }
-
-  const toggleTelemetry = async () => {
-    if (!telemetry) return
-    setTelemetrySaving(true)
-    const updated = await api.updateTelemetrySettings({ share_corrections: !telemetry.share_corrections })
-    setTelemetrySaving(false)
-    if (updated) setTelemetry(updated)
+    setAppInfo(info); setStats(statsData); setBusinesses(bizList || []); setCorrections(correctionsData)
   }
 
   const showMsg = (text, type = 'success') => {
@@ -261,26 +260,53 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
 
       {/* Privacy */}
       <Section title="Privacy">
-        <div className="flex items-center justify-between py-1 gap-4">
-          <div>
-            <p className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
-              Share anonymized patterns to help improve Luca
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
-              When you correct a category or a receipt detail, an anonymized signal (category names,
-              amounts, confidence level) may be shared — never vendor names, descriptions, or account info.
-            </p>
-          </div>
-          <button
-            onClick={toggleTelemetry}
-            disabled={!telemetry || telemetrySaving}
-            className="flex-shrink-0 w-11 h-6 rounded-full relative transition-all"
-            style={{ background: telemetry?.share_corrections ? 'var(--accent)' : 'var(--border)' }}
-          >
-            <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
-              style={{ left: telemetry?.share_corrections ? '22px' : '2px' }} />
-          </button>
+        <div className="py-1">
+          <p className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+            Anonymized improvement data
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
+            When you correct a category or a receipt detail, an anonymized signal (category names,
+            amounts, confidence level) may be shared to help improve Luca — never vendor names,
+            descriptions, or account info. Your choice was captured during setup; full details are
+            in the User Agreement.
+          </p>
         </div>
+      </Section>
+
+      {/* Corrections & Learning */}
+      <Section title="Corrections & Learning">
+        {!corrections || corrections.total === 0 ? (
+          <p className="text-xs py-1" style={{ color: 'var(--text-2)' }}>
+            No corrections logged yet — this fills in as you (or testers) correct a category or a
+            receipt detail Luca got wrong.
+          </p>
+        ) : (
+          <>
+            <Row label="Total logged" value={corrections.total} />
+            <Row label="Not yet synced" value={corrections.unsynced} />
+            {Object.entries(corrections.by_type).map(([type, count]) => (
+              <Row key={type} label={CORRECTION_TYPE_LABELS[type] || type} value={count} />
+            ))}
+
+            <p className="text-xs font-medium mt-4 mb-2" style={{ color: 'var(--text-2)' }}>
+              Most recent
+            </p>
+            <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto">
+              {corrections.recent.map(c => (
+                <div key={c.id} className="flex items-center justify-between text-xs py-1.5 px-2 rounded-lg"
+                  style={{ background: 'var(--card-2)' }}>
+                  <span style={{ color: 'var(--text-1)' }}>
+                    {CORRECTION_TYPE_LABELS[c.correction_type] || c.correction_type}
+                    {c.category_before && c.category_after && (
+                      <span style={{ color: 'var(--text-2)' }}> — {c.category_before} → {c.category_after}</span>
+                    )}
+                  </span>
+                  <span style={{ color: 'var(--text-2)' }}>{c.created_at?.split('T')[0]}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </Section>
 
       {/* Danger Zone */}

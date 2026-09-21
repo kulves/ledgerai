@@ -60,6 +60,40 @@ class CorrectionLog(BaseModel):
     confidence: Optional[str] = None
 
 
+@router.get("/")
+def list_corrections(limit: int = 50):
+    """
+    Returns recent corrections plus a summary breakdown by type — this is
+    the verification view: confirms corrections are actually being logged,
+    and surfaces early patterns before there's enough volume for anything
+    automated to act on.
+    """
+    conn = get_db()
+    try:
+        rows = conn.execute(
+            "SELECT * FROM corrections ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+
+        summary_rows = conn.execute("""
+            SELECT correction_type, COUNT(*) AS count
+            FROM corrections
+            GROUP BY correction_type
+            ORDER BY count DESC
+        """).fetchall()
+
+        total = conn.execute("SELECT COUNT(*) AS c FROM corrections").fetchone()["c"]
+        unsynced = conn.execute("SELECT COUNT(*) AS c FROM corrections WHERE synced = 0").fetchone()["c"]
+
+        return {
+            "total": total,
+            "unsynced": unsynced,
+            "by_type": {r["correction_type"]: r["count"] for r in summary_rows},
+            "recent": [dict(r) for r in rows],
+        }
+    finally:
+        conn.close()
+
+
 @router.post("/")
 def log_correction(correction: CorrectionLog):
     """

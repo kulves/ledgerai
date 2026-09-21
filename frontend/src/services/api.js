@@ -76,6 +76,17 @@ export const api = {
     }).catch(() => {})   // best-effort -- a failed log should never interrupt the user
   },
 
+  async getCorrections(limit = 50) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/corrections/?limit=${limit}`)
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('getCorrections failed:', error)
+      return null
+    }
+  },
+
   async getTelemetrySettings() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/corrections/telemetry-settings`)
