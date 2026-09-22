@@ -76,6 +76,7 @@ class BusinessUpdate(BaseModel):
     name:        Optional[str] = None
     entity_type: Optional[str] = None
     state:       Optional[str] = None
+    industry:    Optional[str] = None
 
 
 @router.put("/businesses/{business_id}")

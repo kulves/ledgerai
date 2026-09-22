@@ -53,6 +53,7 @@ export default function OnboardingFlow({ onComplete }) {
   const [bizName, setBizName]       = useState('')
   const [bizEntity, setBizEntity]   = useState('sole_prop')
   const [bizState, setBizState]     = useState('CA')
+  const [bizIndustry, setBizIndustry] = useState('general')
   const [agreed, setAgreed]         = useState(false)
   const [shareCorrections, setShareCorrections] = useState(true)   // default on, but explicitly captured at install time
   const [creating, setCreating]     = useState(false)
@@ -80,7 +81,7 @@ export default function OnboardingFlow({ onComplete }) {
     setCreating(true)
     setError('')
     const state = bizState === 'OTHER' ? 'CA' : bizState
-    const result = await api.createBusiness(bizName.trim(), bizEntity, state)
+    const result = await api.createBusiness(bizName.trim(), bizEntity, state, bizIndustry)
     setCreating(false)
     if (result) {
       next()
@@ -285,6 +286,25 @@ export default function OnboardingFlow({ onComplete }) {
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
                   Luca applies your state's specific tax rules automatically.
+                </p>
+              </div>
+
+              {/* Industry — changes how reports group your categories, not the categories themselves */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-600">
+                  Industry (optional)
+                </label>
+                <select
+                  value={bizIndustry}
+                  onChange={e => setBizIndustry(e.target.value)}
+                  className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9962C] bg-white"
+                >
+                  <option value="general">General / Other</option>
+                  <option value="real_estate">Real Estate Agent</option>
+                  <option value="ria">RIA / Financial Advisor</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  Groups your reports around what matters most for your industry. You can change this later in Settings.
                 </p>
               </div>
             </Step>

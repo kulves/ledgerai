@@ -309,6 +309,7 @@ def init_db() -> None:
     # ── Migrations (safe to re-run — only adds a column if missing) ────────
     _add_column_if_missing(conn, "expenses", "notes", "TEXT DEFAULT ''")
     _add_column_if_missing(conn, "expenses", "split_group", "TEXT DEFAULT NULL")
+    _add_column_if_missing(conn, "businesses", "industry", "TEXT DEFAULT 'general'")
     _normalize_legacy_categories(conn)
  
     conn.commit()

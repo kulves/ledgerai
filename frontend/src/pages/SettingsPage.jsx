@@ -76,8 +76,10 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
   const [showClear, setShowClear]   = useState(false)
   const [message, setMessage]       = useState({ text: '', type: 'success' })
   const [showAddBiz, setShowAddBiz] = useState(false)
-  const [newBiz, setNewBiz]         = useState({ name: '', entity_type: 'sole_prop', state: 'CA' })
+  const [newBiz, setNewBiz]         = useState({ name: '', entity_type: 'sole_prop', state: 'CA', industry: 'general' })
   const [corrections, setCorrections] = useState(null)   // summary + recent list, for the verification view
+  const [confirmDeleteBiz, setConfirmDeleteBiz] = useState(null)   // business pending delete confirmation
+  const [deletingBiz, setDeletingBiz] = useState(false)
 
   useEffect(() => { loadAll() }, [])
 
@@ -106,12 +108,22 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
   const handleAddBiz = async () => {
     if (!newBiz.name.trim()) return
     setSaving(true)
-    await api.createBusiness(newBiz.name, newBiz.entity_type, newBiz.state)
+    await api.createBusiness(newBiz.name, newBiz.entity_type, newBiz.state, newBiz.industry)
     setSaving(false)
     setShowAddBiz(false)
-    setNewBiz({ name: '', entity_type: 'sole_prop', state: 'CA' })
+    setNewBiz({ name: '', entity_type: 'sole_prop', state: 'CA', industry: 'general' })
     loadAll()
     showMsg('Business added.')
+  }
+
+  const handleDeleteBiz = async () => {
+    if (!confirmDeleteBiz) return
+    setDeletingBiz(true)
+    await api.deactivateBusiness(confirmDeleteBiz.id)
+    setDeletingBiz(false)
+    setConfirmDeleteBiz(null)
+    loadAll()
+    showMsg('Business removed.')
   }
 
   const handleClearData = async () => {
@@ -181,6 +193,13 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
                     {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
+                <select value={editForm.industry || 'general'}
+                  onChange={e => setEditForm(p => ({ ...p, industry: e.target.value }))}
+                  style={selectStyle}>
+                  <option value="general">General / Other</option>
+                  <option value="real_estate">Real Estate Agent</option>
+                  <option value="ria">RIA / Financial Advisor</option>
+                </select>
                 <div className="flex gap-2">
                   <button onClick={handleSaveBiz} disabled={saving}
                     className="px-4 py-2 rounded-lg text-xs font-bold transition-all"
@@ -200,13 +219,24 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
                   <p className="text-sm font-semibold" style={{ color: 'var(--text-0)' }}>{biz.name}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-2)' }}>
                     {ENTITY_TYPES.find(t => t.value === biz.entity_type)?.label || biz.entity_type} · {biz.state}
+                    {biz.industry === 'real_estate' && ' · Real Estate Agent'}
+                    {biz.industry === 'ria' && ' · RIA / Financial Advisor'}
                   </p>
                 </div>
-                <button onClick={() => { setEditingBiz(biz); setEditForm({ name: biz.name, entity_type: biz.entity_type, state: biz.state }) }}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                  style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
-                  Edit
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => { setEditingBiz(biz); setEditForm({ name: biz.name, entity_type: biz.entity_type, state: biz.state, industry: biz.industry || 'general' }) }}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                    style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                    Edit
+                  </button>
+                  {businesses.length > 1 && (
+                    <button onClick={() => setConfirmDeleteBiz(biz)}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                      style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--red)' }}>
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -228,6 +258,12 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+            <select value={newBiz.industry} onChange={e => setNewBiz(p => ({ ...p, industry: e.target.value }))}
+              style={selectStyle}>
+              <option value="general">General / Other</option>
+              <option value="real_estate">Real Estate Agent</option>
+              <option value="ria">RIA / Financial Advisor</option>
+            </select>
             <div className="flex gap-2">
               <button onClick={handleAddBiz} disabled={saving || !newBiz.name.trim()}
                 className="px-4 py-2 rounded-lg text-xs font-bold"
@@ -363,6 +399,43 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
           </div>
         )}
       </Section>
+
+      {/* Delete business confirmation modal */}
+      {confirmDeleteBiz && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setConfirmDeleteBiz(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-5 flex flex-col gap-4"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-0)' }}>
+                Remove {confirmDeleteBiz.name}?
+              </p>
+              <p className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>
+                This hides the business and its data from Luca, but doesn't permanently delete
+                anything from disk.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmDeleteBiz(null)}
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}>
+                Cancel
+              </button>
+              <button onClick={handleDeleteBiz} disabled={deletingBiz}
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold"
+                style={{ background: 'var(--red)', color: '#fff', opacity: deletingBiz ? 0.6 : 1 }}>
+                {deletingBiz ? 'Removing…' : 'Yes, remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

@@ -32,6 +32,7 @@ from datetime import datetime, date
 from io import BytesIO
 from backend.app.database import get_db
 from backend.app.logger import get_logger
+from backend.app import report_templates
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -143,11 +144,25 @@ def get_report_data(business_id: int, start_date: str, end_date: str, exclude_ca
         total_deductions        = total_deductible + total_mileage_deduction
         net_profit              = total_income - total_expenses
 
+        # Industry template: groups the same category_totals into sections
+        # for businesses that have one set (e.g. "real_estate", "ria").
+        # None for industry="general" — callers fall back to the flat listing.
+        business_dict = dict(business)
+        industry_sections = report_templates.apply_template(
+            [dict(c) for c in category_totals], business_dict.get("industry", "general")
+        )
+        highlight_metric = (
+            report_templates.compute_highlight_metric(industry_sections, business_dict.get("industry", "general"))
+            if industry_sections else None
+        )
+
         return {
-            "business":          dict(business),
+            "business":          business_dict,
             "period":            {"start": start_date, "end": end_date},
             "expenses":          expenses_list,
             "category_totals":   [dict(c) for c in category_totals],
+            "industry_sections": industry_sections,   # None unless the business has a matching template
+            "highlight_metric":  highlight_metric,
             "excluded_categories": exclude_categories,
             "mileage":           mileage_list,
             "mileage_totals":    [dict(m) for m in mileage_totals],
@@ -187,6 +202,9 @@ def get_summary(business_id: int, start_date: str = None, end_date: str = None, 
             "mileage_deduction": data["summary"]["total_mileage_deduction"],
             "total_miles":       data["summary"]["total_miles"],
             "excluded_categories": data["excluded_categories"],
+            "industry_sections": data["industry_sections"],
+            "highlight_metric":  data["highlight_metric"],
+            "industry":          data["business"].get("industry", "general"),
         }
         return flat
     except HTTPException: raise
@@ -325,7 +343,55 @@ def download_excel(
 
         auto_width(ws1)
 
-        # ── Sheet 2: Expenses ──────────────────────────────────────────
+        # ── Sheet 2: Category Breakdown (industry-grouped if available) ─
+        ws_cat = wb.create_sheet("Category Breakdown")
+        row = 1
+        if data.get("industry_sections"):
+            template_info = report_templates.get_template(biz.get("industry", "general"))
+            label = template_info["label"] if template_info else "Industry"
+            hdr_style(ws_cat, row, 4, f"Expenses by Category — {label} Template")
+            row += 1
+            if data.get("highlight_metric"):
+                hm = data["highlight_metric"]
+                ws_cat.cell(row=row, column=1, value=f"{hm['label']}: {hm['value']}%")
+                ws_cat.cell(row=row, column=1).font = Font(italic=True, color=GOLD_HEX)
+                row += 2
+            else:
+                row += 1
+
+            for section in data["industry_sections"]:
+                if not section["categories"]:
+                    continue
+                ws_cat.cell(row=row, column=1, value=f"{section['title']} — ${section['total']:.2f}")
+                ws_cat.cell(row=row, column=1).font = Font(bold=True, size=11, color=NAVY_HEX)
+                row += 1
+                col_hdr(ws_cat, row, ["Category", "Transactions", "Deductible", "Total"])
+                row += 1
+                for cat in section["categories"]:
+                    ws_cat.cell(row=row, column=1, value=cat["category"])
+                    ws_cat.cell(row=row, column=2, value=cat["count"])
+                    c3 = ws_cat.cell(row=row, column=3, value=cat["deductible_total"])
+                    c3.number_format = '"$"#,##0.00'
+                    c4 = ws_cat.cell(row=row, column=4, value=cat["total"])
+                    c4.number_format = '"$"#,##0.00'
+                    row += 1
+                row += 1
+        else:
+            hdr_style(ws_cat, row, 4, "Expenses by Category")
+            row += 1
+            col_hdr(ws_cat, row, ["Category", "Transactions", "Deductible", "Total"])
+            row += 1
+            for cat in data["category_totals"]:
+                ws_cat.cell(row=row, column=1, value=cat["category"])
+                ws_cat.cell(row=row, column=2, value=cat["count"])
+                c3 = ws_cat.cell(row=row, column=3, value=cat["deductible_total"])
+                c3.number_format = '"$"#,##0.00'
+                c4 = ws_cat.cell(row=row, column=4, value=cat["total"])
+                c4.number_format = '"$"#,##0.00'
+                row += 1
+        auto_width(ws_cat)
+
+        # ── Sheet 3: Expenses ──────────────────────────────────────────
         ws2 = wb.create_sheet("Expenses")
         hdr_style(ws2, 1, 5, "Expense Detail")
         col_hdr(ws2, 2, ["Date", "Vendor", "Category", "Deductible", "Amount"])
@@ -469,7 +535,37 @@ def build_pdf(data: dict, watermark: bool = True) -> bytes:
     story.append(pl_table)
     story.append(Spacer(1,12))
 
-    if data["category_totals"]:
+    if data.get("industry_sections"):
+        template_info = report_templates.get_template(data["business"].get("industry", "general"))
+        label = template_info["label"] if template_info else "Industry"
+        story.append(Paragraph(f"Expenses by Category — {label} Template", section_style))
+
+        if data.get("highlight_metric"):
+            hm = data["highlight_metric"]
+            story.append(Paragraph(f"<b>{hm['label']}:</b> {hm['value']}%", styles["Normal"]))
+            story.append(Spacer(1, 6))
+
+        for section in data["industry_sections"]:
+            if not section["categories"]:
+                continue
+            story.append(Paragraph(f"<b>{section['title']}</b> — ${section['total']:.2f}", styles["Normal"]))
+            sec_data = [["Category", "Transactions", "Deductible", "Total"]]
+            for cat in section["categories"]:
+                sec_data.append([cat["category"], str(cat["count"]),
+                    f"${cat['deductible_total']:.2f}", f"${cat['total']:.2f}"])
+            sec_table = Table(sec_data, colWidths=[3*inch,1.2*inch,1.2*inch,1.1*inch])
+            sec_table.setStyle(TableStyle([
+                ("BACKGROUND",(0,0),(-1,0),NAVY),("TEXTCOLOR",(0,0),(-1,0),WHITE),
+                ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),("FONTSIZE",(0,0),(-1,-1),8),
+                ("ALIGN",(1,0),(-1,-1),"RIGHT"),("ROWBACKGROUNDS",(0,1),(-1,-1),[WHITE,LIGHT]),
+                ("GRID",(0,0),(-1,-1),0.5,colors.HexColor("#E0DED8")),
+                ("BOTTOMPADDING",(0,0),(-1,-1),4),("TOPPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(-1,-1),8),
+            ]))
+            story.append(sec_table)
+            story.append(Spacer(1, 8))
+        story.append(Spacer(1, 4))
+
+    elif data["category_totals"]:
         story.append(Paragraph("Expenses by Category", section_style))
         cat_data = [["Category","Transactions","Deductible","Total"]]
         for cat in data["category_totals"]:

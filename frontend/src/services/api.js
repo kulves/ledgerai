@@ -144,12 +144,12 @@ export const api = {
     }
   },
  
-  async createBusiness(name, entityType = 'sole_prop', state = 'CA') {
+  async createBusiness(name, entityType = 'sole_prop', state = 'CA', industry = 'general') {
     try {
       const response = await fetch(`${API_BASE_URL}/api/businesses/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, entity_type: entityType, state })
+        body: JSON.stringify({ name, entity_type: entityType, state, industry })
       });
       if (!response.ok) throw new Error(`Backend error: ${response.status}`);
       return await response.json();

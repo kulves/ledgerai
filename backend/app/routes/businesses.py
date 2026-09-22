@@ -24,9 +24,9 @@ def create_business(business: BusinessCreate):
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO businesses (name, entity_type, state)
-            VALUES (?, ?, ?)
-        """, (business.name, business.entity_type, business.state))
+            INSERT INTO businesses (name, entity_type, state, industry)
+            VALUES (?, ?, ?, ?)
+        """, (business.name, business.entity_type, business.state, business.industry))
         conn.commit()
 
         new_id = cursor.lastrowid

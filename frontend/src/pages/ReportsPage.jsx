@@ -75,6 +75,8 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
  
   const categories = report?.by_category || {}
   const catEntries = Object.entries(categories).sort((a, b) => b[1] - a[1])
+  const industrySections = report?.industry_sections?.filter(s => s.categories.length > 0) || null
+  const highlightMetric = report?.highlight_metric || null
   const netProfit       = report?.net_profit       || 0
   const cashFlow        = netProfit
   const totalExpenses   = report?.total_expenses   || 0
@@ -226,8 +228,57 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
             <p className="text-sm" style={{ color: 'var(--text-2)' }}>No data for this period</p>
           </div>
         )}
- 
-        {!loading && catEntries.map(([cat, amount], i) => {
+
+        {!loading && highlightMetric && (
+          <div className="mx-5 mt-4 mb-1 px-4 py-3 rounded-xl flex items-center justify-between"
+            style={{ background: 'rgba(201,150,44,0.1)', border: '1px solid rgba(201,150,44,0.3)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>{highlightMetric.label}</span>
+            <span className="text-lg font-bold" style={{ color: '#C9962C' }}>{highlightMetric.value}%</span>
+          </div>
+        )}
+
+        {!loading && industrySections ? (
+          industrySections.map(section => (
+            <div key={section.title}>
+              <div className="px-5 pt-4 pb-1 flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--text-2)' }}>
+                  {section.title}
+                </span>
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-2)' }}>
+                  {fmt(section.total)}
+                </span>
+              </div>
+              {section.categories.map((cat, i) => {
+                const pct = totalExpenses > 0 ? (cat.total / totalExpenses * 100) : 0
+                const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length]
+                return (
+                  <div key={cat.category}
+                    className="flex items-center gap-4 px-5 py-3.5 transition-all"
+                    style={{ borderTop: '1px solid var(--border-soft)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
+                    <span className="text-sm flex-1 font-medium" style={{ color: 'var(--text-0)' }}>{cat.category}</span>
+                    <div className="w-32 h-1.5 rounded-full overflow-hidden flex-shrink-0"
+                      style={{ background: 'var(--border)' }}>
+                      <div className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                    <span className="text-xs w-10 text-right flex-shrink-0" style={{ color: 'var(--text-2)' }}>
+                      {pct.toFixed(1)}%
+                    </span>
+                    <span className="text-sm font-bold w-24 text-right flex-shrink-0"
+                      style={{ color: 'var(--text-0)' }}>
+                      {fmt(cat.total)}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          ))
+        ) : (
+          !loading && catEntries.map(([cat, amount], i) => {
           const pct = totalExpenses > 0 ? (amount / totalExpenses * 100) : 0
           const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length]
           return (
@@ -253,7 +304,8 @@ export default function ReportsPage({ backendStatus, selectedBusiness: propBusin
               </span>
             </div>
           )
-        })}
+        })
+        )}
  
         {!loading && catEntries.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3"
