@@ -64,7 +64,7 @@ function Row({ label, value, sub }) {
   )
 }
 
-export default function SettingsPage({ backendStatus, onResetOnboarding }) {
+export default function SettingsPage({ backendStatus, onResetOnboarding, onBusinessesChanged }) {
   const [appInfo, setAppInfo]       = useState(null)
   const [stats, setStats]           = useState(null)
   const [businesses, setBusinesses] = useState([])
@@ -102,6 +102,7 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
     setSaving(false)
     setEditingBiz(null)
     loadAll()
+    onBusinessesChanged?.()
     showMsg('Business updated successfully.')
   }
 
@@ -113,6 +114,7 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
     setShowAddBiz(false)
     setNewBiz({ name: '', entity_type: 'sole_prop', state: 'CA', industry: 'general' })
     loadAll()
+    onBusinessesChanged?.()
     showMsg('Business added.')
   }
 
@@ -123,6 +125,7 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
     setDeletingBiz(false)
     setConfirmDeleteBiz(null)
     loadAll()
+    onBusinessesChanged?.()
     showMsg('Business removed.')
   }
 
@@ -134,6 +137,7 @@ export default function SettingsPage({ backendStatus, onResetOnboarding }) {
     setShowClear(false)
     setClearInput('')
     loadAll()
+    onBusinessesChanged?.()
     showMsg('All data cleared.', 'error')
   }
 

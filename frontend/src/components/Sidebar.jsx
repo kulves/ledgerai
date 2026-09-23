@@ -4,6 +4,15 @@
  * nav items, Ask Luca CTA, and user profile at bottom.
  */
 import { useState } from 'react'
+import { api } from '../services/api'
+
+const ENTITY_TYPES = [
+  { value: 'sole_prop',   label: 'Sole Proprietor' },
+  { value: 'llc',         label: 'LLC' },
+  { value: 's_corp',      label: 'S-Corporation' },
+  { value: 'partnership', label: 'Partnership' },
+]
+const STATES = ['CA','TX','FL','NY','IL','GA','WA','AZ','NV','CO','OTHER']
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: (
@@ -50,8 +59,10 @@ const BOTTOM_ITEMS = [
   )},
 ]
 
-export default function Sidebar({ activeTab, setActiveTab, businesses, selectedBusiness, onSelectBusiness, theme, setTheme }) {
+export default function Sidebar({ activeTab, setActiveTab, businesses, selectedBusiness, onSelectBusiness, onBusinessesChanged, theme, setTheme }) {
   const [showAddBusiness, setShowAddBusiness] = useState(false)
+  const [newBiz, setNewBiz] = useState({ name: '', entity_type: 'sole_prop', state: 'CA', industry: 'general' })
+  const [addingBiz, setAddingBiz] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showBusinessMenu, setShowBusinessMenu] = useState(false)
@@ -153,47 +164,85 @@ export default function Sidebar({ activeTab, setActiveTab, businesses, selectedB
         </div>
       )}
 
-      {/* Add Business inline form */}
-      {showAddBusiness && !collapsed && (
-        <div className="px-3 mb-3">
+      {/* Add Business modal */}
+      {showAddBusiness && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowAddBusiness(false)}
+        >
           <div
-            className="rounded-xl p-3 flex flex-col gap-2"
-            style={{ background: 'var(--card-2)', border: '1px solid rgba(34,211,238,0.2)' }}
+            className="w-full max-w-sm rounded-2xl p-5 flex flex-col gap-3"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+            onClick={e => e.stopPropagation()}
           >
-            <p className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>New Business</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-0)' }}>New Business</p>
+
             <input
               type="text"
               placeholder="Business name"
-              id="new-biz-name"
-              className="rounded-lg px-3 py-1.5 text-xs outline-none w-full"
-              style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-0)' }}
+              value={newBiz.name}
+              onChange={e => setNewBiz(p => ({ ...p, name: e.target.value }))}
+              className="rounded-lg px-3 py-2 text-sm outline-none w-full"
+              style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}
             />
-            <div className="flex gap-2">
-              <button
-                onClick={async () => {
-                  const name = document.getElementById('new-biz-name').value.trim()
-                  if (!name) return
-                  const res = await fetch('http://127.0.0.1:8000/api/businesses/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, entity_type: 'sole_prop', state: 'CA' })
-                  })
-                  if (res.ok) {
-                    setShowAddBusiness(false)
-                    window.location.reload()
-                  }
-                }}
-                className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
-                style={{ background: 'var(--accent)', color: '#04141a' }}
+
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={newBiz.entity_type}
+                onChange={e => setNewBiz(p => ({ ...p, entity_type: e.target.value }))}
+                className="rounded-lg px-3 py-2 text-sm outline-none"
+                style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}
               >
-                Add
-              </button>
+                {ENTITY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+              <select
+                value={newBiz.state}
+                onChange={e => setNewBiz(p => ({ ...p, state: e.target.value }))}
+                className="rounded-lg px-3 py-2 text-sm outline-none"
+                style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}
+              >
+                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+
+            <select
+              value={newBiz.industry}
+              onChange={e => setNewBiz(p => ({ ...p, industry: e.target.value }))}
+              className="rounded-lg px-3 py-2 text-sm outline-none"
+              style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-0)' }}
+            >
+              <option value="general">General / Other</option>
+              <option value="real_estate">Real Estate Agent</option>
+              <option value="ria">RIA / Financial Advisor</option>
+            </select>
+
+            <div className="flex gap-2 mt-1">
               <button
                 onClick={() => setShowAddBusiness(false)}
-                className="px-3 py-1.5 rounded-lg text-xs transition-all"
-                style={{ background: 'var(--border)', color: 'var(--text-1)' }}
+                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+                style={{ background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text-1)' }}
               >
                 Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!newBiz.name.trim()) return
+                  setAddingBiz(true)
+                  const created = await api.createBusiness(newBiz.name.trim(), newBiz.entity_type, newBiz.state, newBiz.industry)
+                  setAddingBiz(false)
+                  if (created) {
+                    setShowAddBusiness(false)
+                    setNewBiz({ name: '', entity_type: 'sole_prop', state: 'CA', industry: 'general' })
+                    await onBusinessesChanged?.()
+                    onSelectBusiness?.(created)
+                  }
+                }}
+                disabled={addingBiz || !newBiz.name.trim()}
+                className="flex-1 py-2 rounded-lg text-sm font-bold transition-all"
+                style={{ background: 'var(--accent)', color: '#04141a', opacity: (addingBiz || !newBiz.name.trim()) ? 0.6 : 1 }}
+              >
+                {addingBiz ? 'Adding…' : 'Add Business'}
               </button>
             </div>
           </div>

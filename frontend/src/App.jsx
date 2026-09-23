@@ -61,14 +61,27 @@ export default function App() {
     return () => clearInterval(interval)
   }, [])
 
+  // Reusable — called on initial load AND whenever a business is added,
+  // edited, or deleted anywhere in the app (Sidebar's Add Business modal,
+  // Settings' business list), so every part of the UI (sidebar dropdown,
+  // dashboard, etc.) stays in sync with a single source of truth instead
+  // of each page keeping its own stale copy.
+  const loadBusinesses = async () => {
+    const data = await api.getBusinesses()
+    setBusinesses(data || [])
+    if (data?.length) {
+      // If the currently selected business was just deleted, fall back
+      // to the first remaining one instead of silently operating on a
+      // business that no longer exists.
+      setSelectedBusiness(prev => (prev && data.some(b => b.id === prev.id)) ? prev : data[0])
+    } else {
+      setSelectedBusiness(null)
+    }
+  }
+
   useEffect(() => {
     if (onboarded && ollamaSetupDone) {
-      api.getBusinesses().then(data => {
-        if (data?.length) {
-          setBusinesses(data)
-          if (!selectedBusiness) setSelectedBusiness(data[0])
-        }
-      })
+      loadBusinesses()
     }
   }, [onboarded, ollamaSetupDone])
 
@@ -92,6 +105,7 @@ export default function App() {
     selectedBusiness,
     onSelectBusiness: setSelectedBusiness,
     businesses,
+    onBusinessesChanged: loadBusinesses,
   }
 
   return (
@@ -103,6 +117,7 @@ export default function App() {
         businesses={businesses}
         selectedBusiness={selectedBusiness}
         onSelectBusiness={setSelectedBusiness}
+        onBusinessesChanged={loadBusinesses}
         theme={theme}
         setTheme={setTheme}
       />
