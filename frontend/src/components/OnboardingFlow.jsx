@@ -285,7 +285,8 @@ export default function OnboardingFlow({ onComplete }) {
                   ))}
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
-                  Luca applies your state's specific tax rules automatically.
+                  Used to label your reports correctly. Luca currently calculates federal
+                  deductions — state-specific rules are coming in a future update.
                 </p>
               </div>
 

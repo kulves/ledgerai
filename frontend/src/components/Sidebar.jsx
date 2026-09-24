@@ -4,6 +4,7 @@
  * nav items, Ask Luca CTA, and user profile at bottom.
  */
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { api } from '../services/api'
 
 const ENTITY_TYPES = [
@@ -164,8 +165,11 @@ export default function Sidebar({ activeTab, setActiveTab, businesses, selectedB
         </div>
       )}
 
-      {/* Add Business modal */}
-      {showAddBusiness && (
+      {/* Add Business modal — rendered via portal directly into document.body so it
+          always sits above everything, regardless of the Sidebar's own CSS
+          transitions/stacking context (that mismatch was causing the modal to
+          visually overlap/bleed with the page behind it instead of covering it). */}
+      {showAddBusiness && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-6"
           style={{ background: 'rgba(0,0,0,0.6)' }}
@@ -246,7 +250,8 @@ export default function Sidebar({ activeTab, setActiveTab, businesses, selectedB
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Main nav */}
